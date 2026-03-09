@@ -10,16 +10,20 @@ def _elastic3d_matrix(Ge):
     props = as_float_array(Ge).reshape(-1)
     E = props[0]
     nu = props[1]
-    return E / ((1.0 + nu) * (1.0 - 2.0 * nu)) * np.array(
-        [
-            [1.0 - nu, nu, nu, 0.0, 0.0, 0.0],
-            [nu, 1.0 - nu, nu, 0.0, 0.0, 0.0],
-            [nu, nu, 1.0 - nu, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0],
-        ],
-        dtype=float,
+    return (
+        E
+        / ((1.0 + nu) * (1.0 - 2.0 * nu))
+        * np.array(
+            [
+                [1.0 - nu, nu, nu, 0.0, 0.0, 0.0],
+                [nu, 1.0 - nu, nu, 0.0, 0.0, 0.0],
+                [nu, nu, 1.0 - nu, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0],
+            ],
+            dtype=float,
+        )
     )
 
 
@@ -44,7 +48,10 @@ def _solid_B(dN):
 
 def keT4e(Xe, Ge):
     Xe = as_float_array(Xe)
-    dN = np.array([[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]], dtype=float)
+    dN = np.array(
+        [[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]],
+        dtype=float,
+    )
     J = dN @ Xe
     dN = np.linalg.solve(J, dN)
     B = _solid_B(dN)
@@ -55,7 +62,10 @@ def keT4e(Xe, Ge):
 def qeT4e(Xe, Ge, Ue):
     Xe = as_float_array(Xe)
     Ue = as_float_array(Ue).reshape(-1, 1)
-    dN = np.array([[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]], dtype=float)
+    dN = np.array(
+        [[1.0, 0.0, 0.0, -1.0], [0.0, 1.0, 0.0, -1.0], [0.0, 0.0, 1.0, -1.0]],
+        dtype=float,
+    )
     J = dN @ Xe
     dN = np.linalg.solve(J, dN)
     B = _solid_B(dN)
@@ -85,7 +95,9 @@ def qT4e(q, T, X, G, u):
     for i, row in enumerate(topology):
         nodes = topology_nodes(row)
         prop = topology_property(row)
-        qe, Se, Ee = qeT4e(coordinates[nodes - 1], material_row(G, prop), U[nodes - 1].reshape(-1, 1))
+        qe, Se, Ee = qeT4e(
+            coordinates[nodes - 1], material_row(G, prop), U[nodes - 1].reshape(-1, 1)
+        )
         q = assmq(q, qe, row, coordinates.shape[1])
         S[i] = Se
         E[i] = Ee
@@ -93,52 +105,63 @@ def qT4e(q, T, X, G, u):
 
 
 def _hexa_dN(r_i: float, r_j: float, r_k: float):
-    dNi = np.array(
-        [
-            -(1.0 - r_j) * (1.0 - r_k),
-            (1.0 - r_j) * (1.0 - r_k),
-            (1.0 + r_j) * (1.0 - r_k),
-            -(1.0 + r_j) * (1.0 - r_k),
-            -(1.0 - r_j) * (1.0 + r_k),
-            (1.0 - r_j) * (1.0 + r_k),
-            (1.0 + r_j) * (1.0 + r_k),
-            -(1.0 + r_j) * (1.0 + r_k),
-        ],
-        dtype=float,
-    ) / 8.0
-    dNj = np.array(
-        [
-            -(1.0 - r_i) * (1.0 - r_k),
-            -(1.0 + r_i) * (1.0 - r_k),
-            (1.0 + r_i) * (1.0 - r_k),
-            (1.0 - r_i) * (1.0 - r_k),
-            -(1.0 - r_i) * (1.0 + r_k),
-            -(1.0 + r_i) * (1.0 + r_k),
-            (1.0 + r_i) * (1.0 + r_k),
-            (1.0 - r_i) * (1.0 + r_k),
-        ],
-        dtype=float,
-    ) / 8.0
-    dNk = np.array(
-        [
-            -(1.0 - r_i) * (1.0 - r_j),
-            -(1.0 + r_i) * (1.0 - r_j),
-            -(1.0 + r_i) * (1.0 + r_j),
-            -(1.0 - r_i) * (1.0 + r_j),
-            (1.0 - r_i) * (1.0 - r_j),
-            (1.0 + r_i) * (1.0 - r_j),
-            (1.0 + r_i) * (1.0 + r_j),
-            (1.0 - r_i) * (1.0 + r_j),
-        ],
-        dtype=float,
-    ) / 8.0
+    dNi = (
+        np.array(
+            [
+                -(1.0 - r_j) * (1.0 - r_k),
+                (1.0 - r_j) * (1.0 - r_k),
+                (1.0 + r_j) * (1.0 - r_k),
+                -(1.0 + r_j) * (1.0 - r_k),
+                -(1.0 - r_j) * (1.0 + r_k),
+                (1.0 - r_j) * (1.0 + r_k),
+                (1.0 + r_j) * (1.0 + r_k),
+                -(1.0 + r_j) * (1.0 + r_k),
+            ],
+            dtype=float,
+        )
+        / 8.0
+    )
+    dNj = (
+        np.array(
+            [
+                -(1.0 - r_i) * (1.0 - r_k),
+                -(1.0 + r_i) * (1.0 - r_k),
+                (1.0 + r_i) * (1.0 - r_k),
+                (1.0 - r_i) * (1.0 - r_k),
+                -(1.0 - r_i) * (1.0 + r_k),
+                -(1.0 + r_i) * (1.0 + r_k),
+                (1.0 + r_i) * (1.0 + r_k),
+                (1.0 - r_i) * (1.0 + r_k),
+            ],
+            dtype=float,
+        )
+        / 8.0
+    )
+    dNk = (
+        np.array(
+            [
+                -(1.0 - r_i) * (1.0 - r_j),
+                -(1.0 + r_i) * (1.0 - r_j),
+                -(1.0 + r_i) * (1.0 + r_j),
+                -(1.0 - r_i) * (1.0 + r_j),
+                (1.0 - r_i) * (1.0 - r_j),
+                (1.0 + r_i) * (1.0 - r_j),
+                (1.0 + r_i) * (1.0 + r_j),
+                (1.0 - r_i) * (1.0 + r_j),
+            ],
+            dtype=float,
+        )
+        / 8.0
+    )
     return np.vstack([dNi, dNj, dNk])
 
 
 def keh8e(Xe, Ge):
     Xe = as_float_array(Xe)
     if Xe.shape[0] == 20:
-        raise NotImplementedError("20-node hexahedra are not supported yet, matching the Scilab limitation.")
+        raise NotImplementedError(
+            "20-node hexahedra are not supported yet, matching the Scilab limitation."
+        )
     D = _elastic3d_matrix(Ge)
     r = np.array([-1.0, 1.0], dtype=float) / np.sqrt(3.0)
     w = np.array([1.0, 1.0], dtype=float)
@@ -157,7 +180,9 @@ def keh8e(Xe, Ge):
 def qeh8e(Xe, Ge, Ue):
     Xe = as_float_array(Xe)
     if Xe.shape[0] == 20:
-        raise NotImplementedError("20-node hexahedra are not supported yet, matching the Scilab limitation.")
+        raise NotImplementedError(
+            "20-node hexahedra are not supported yet, matching the Scilab limitation."
+        )
     D = _elastic3d_matrix(Ge)
     Ue = as_float_array(Ue).reshape(-1, 1)
     r = np.array([-1.0, 1.0], dtype=float) / np.sqrt(3.0)
@@ -175,7 +200,13 @@ def qeh8e(Xe, Ge, Ue):
                 B = _solid_B(dN_global)
                 Ee[gp] = (B @ Ue).ravel()
                 Se[gp] = Ee[gp] @ D
-                qe += w[i] * w[j] * w[k] * (B.T @ Se[gp].reshape(-1, 1)) * np.linalg.det(Jt)
+                qe += (
+                    w[i]
+                    * w[j]
+                    * w[k]
+                    * (B.T @ Se[gp].reshape(-1, 1))
+                    * np.linalg.det(Jt)
+                )
                 gp += 1
     return qe, Se, Ee
 
@@ -199,7 +230,9 @@ def qh8e(q, T, X, G, u):
     for i, row in enumerate(topology):
         nodes = topology_nodes(row)
         prop = topology_property(row)
-        qe, Se, Ee = qeh8e(coordinates[nodes - 1], material_row(G, prop), U[nodes - 1].reshape(-1, 1))
+        qe, Se, Ee = qeh8e(
+            coordinates[nodes - 1], material_row(G, prop), U[nodes - 1].reshape(-1, 1)
+        )
         q = assmq(q, qe, row, coordinates.shape[1])
         S[i] = Se.reshape(1, 48)
         E[i] = Ee.reshape(1, 48)

@@ -19,7 +19,12 @@ def devstress(S):
 def eqstress(S) -> float:
     stress = as_float_array(S).reshape(-1)
     if stress.shape[0] == 3:
-        value = stress[0] ** 2 + stress[1] ** 2 - stress[0] * stress[1] + 3.0 * stress[2] ** 2
+        value = (
+            stress[0] ** 2
+            + stress[1] ** 2
+            - stress[0] * stress[1]
+            + 3.0 * stress[2] ** 2
+        )
     else:
         value = 0.5 * (
             (stress[0] - stress[1]) ** 2

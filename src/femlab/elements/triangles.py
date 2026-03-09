@@ -18,13 +18,25 @@ def _elastic_matrix(Ge, *, plane_strain: bool = False):
     E = material[0]
     nu = material[1]
     if not plane_strain:
-        return E / (1.0 - nu**2) * np.array(
-            [[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]],
+        return (
+            E
+            / (1.0 - nu**2)
+            * np.array(
+                [[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]],
+                dtype=float,
+            )
+        )
+    return (
+        E
+        / ((1.0 + nu) * (1.0 - 2.0 * nu))
+        * np.array(
+            [
+                [1.0 - nu, nu, 0.0],
+                [nu, 1.0 - nu, 0.0],
+                [0.0, 0.0, (1.0 - 2.0 * nu) / 2.0],
+            ],
             dtype=float,
         )
-    return E / ((1.0 + nu) * (1.0 - 2.0 * nu)) * np.array(
-        [[1.0 - nu, nu, 0.0], [nu, 1.0 - nu, 0.0], [0.0, 0.0, (1.0 - 2.0 * nu) / 2.0]],
-        dtype=float,
     )
 
 
@@ -102,7 +114,9 @@ def ket3p(Xe, Ge):
     Ke = area * B.T @ D @ B
     if props.size > 1:
         b = props[1]
-        Ke = Ke + (b * area / 12.0) * np.array([[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]])
+        Ke = Ke + (b * area / 12.0) * np.array(
+            [[2.0, 1.0, 1.0], [1.0, 2.0, 1.0], [1.0, 1.0, 2.0]]
+        )
     return Ke
 
 
@@ -137,7 +151,9 @@ def qt3p(q, T, X, G, u):
     for i, row in enumerate(topology):
         nodes = topology_nodes(row)
         prop = topology_property(row)
-        qe, Se, Ee = qet3p(coordinates[nodes - 1], material_row(G, prop), potentials[nodes - 1])
+        qe, Se, Ee = qet3p(
+            coordinates[nodes - 1], material_row(G, prop), potentials[nodes - 1]
+        )
         q = assmq(q, qe, row, 1)
         S[i] = Se
         E[i] = Ee

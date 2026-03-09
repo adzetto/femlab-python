@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .. import init, kq4p, kt3p, plotq4, plotelem, plott3, plotu, qq4p, qt3p, setbc
+from .. import init, kq4p, kt3p, plotelem, plotq4, plott3, plotu, qq4p, qt3p, setbc
 
 
 def flow_data():
@@ -116,7 +116,23 @@ def flow_data():
         dtype=int,
     )
     G = np.array([[1.0e-4]], dtype=float)
-    C = np.array([[1, 20], [5, 20], [10, 20], [19, 20], [24, 20], [14, 40], [15, 40], [16, 40], [18, 40], [23, 40], [28, 40], [31, 40]], dtype=float)
+    C = np.array(
+        [
+            [1, 20],
+            [5, 20],
+            [10, 20],
+            [19, 20],
+            [24, 20],
+            [14, 40],
+            [15, 40],
+            [16, 40],
+            [18, 40],
+            [23, 40],
+            [28, 40],
+            [31, 40],
+        ],
+        dtype=float,
+    )
     return {"X": X, "T1": T1, "T2": T2, "G": G, "C": C, "dof": 1}
 
 

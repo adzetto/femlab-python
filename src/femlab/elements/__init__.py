@@ -17,7 +17,7 @@ from .quads import (
     qq4eps,
     qq4p,
 )
-from .solids import keT4e, keh8e, kT4e, kh8e, qeT4e, qeh8e, qT4e, qh8e
+from .solids import keh8e, keT4e, kh8e, kT4e, qeh8e, qeT4e, qh8e, qT4e
 from .triangles import ket3e, ket3p, kt3e, kt3p, qet3e, qet3p, qt3e, qt3p
 
 __all__ = [
