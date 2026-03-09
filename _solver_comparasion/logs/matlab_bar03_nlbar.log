@@ -1,0 +1,12 @@
+
+{Error using run_solver_case>solve_nlbar (line 167)
+Nonlinear bar solver exceeded the restart guard.
+
+Error in run_solver_case>run_case_solver (line 92)
+        result = solve_nlbar(data);
+                 ^^^^^^^^^^^^^^^^^
+Error in run_solver_case (line 31)
+result = run_case_solver(case_name, data);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+} 
+ERROR: MATLAB error Exit Status: 0x00000001

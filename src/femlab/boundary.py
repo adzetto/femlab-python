@@ -4,10 +4,8 @@ import numpy as np
 
 from ._helpers import (
     as_float_array,
-    cols,
     is_sparse,
     max_abs_diagonal,
-    node_dof_indices,
     solve_linear_system,
 )
 
@@ -57,9 +55,16 @@ def solve_lag(K, p, C=None, dof: int = 1):
         G[i, index] = stiffness_scale
 
     if is_sparse(K) and sp is not None:
-        Kbar = sp.bmat([[K, sp.csr_matrix(G.T)], [sp.csr_matrix(G), None]], format="csr")
+        Kbar = sp.bmat(
+            [[K, sp.csr_matrix(G.T)], [sp.csr_matrix(G), None]], format="csr"
+        )
     else:
-        Kbar = np.block([[as_float_array(K), G.T], [G, np.zeros((n_constraints, n_constraints), dtype=float)]])
+        Kbar = np.block(
+            [
+                [as_float_array(K), G.T],
+                [G, np.zeros((n_constraints, n_constraints), dtype=float)],
+            ]
+        )
     pbar = np.vstack([as_float_array(p).reshape(-1, 1), Q])
     ubar = solve_linear_system(Kbar, pbar)
     return ubar[:system_size]

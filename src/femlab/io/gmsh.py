@@ -161,7 +161,9 @@ def load_gmsh(filename) -> GmshMesh:
         points=np.asarray(point_rows, dtype=int) if point_rows else _empty_array(2),
         lines=np.asarray(line_rows, dtype=int) if line_rows else _empty_array(3),
         lines2=np.asarray(line2_rows, dtype=int) if line2_rows else _empty_array(4),
-        triangles=np.asarray(triangle_rows, dtype=int) if triangle_rows else _empty_array(4),
+        triangles=(
+            np.asarray(triangle_rows, dtype=int) if triangle_rows else _empty_array(4)
+        ),
         quads=np.asarray(quad_rows, dtype=int) if quad_rows else _empty_array(5),
         tets=np.asarray(tet_rows, dtype=int) if tet_rows else _empty_array(5),
         tets10=np.asarray(tet10_rows, dtype=int) if tet10_rows else _empty_array(11),
@@ -169,12 +171,28 @@ def load_gmsh(filename) -> GmshMesh:
         hexa20=np.asarray(hexa20_rows, dtype=int) if hexa20_rows else _empty_array(21),
         hexa27=np.asarray(hexa27_rows, dtype=int) if hexa27_rows else _empty_array(28),
         prism=np.asarray(prism_rows, dtype=int) if prism_rows else _empty_array(7),
-        prism15=np.asarray(prism15_rows, dtype=int) if prism15_rows else _empty_array(16),
-        prism18=np.asarray(prism18_rows, dtype=int) if prism18_rows else _empty_array(19),
-        pyramid=np.asarray(pyramid_rows, dtype=int) if pyramid_rows else _empty_array(6),
-        pyramid13=np.asarray(pyramid13_rows, dtype=int) if pyramid13_rows else _empty_array(14),
-        pyramid14=np.asarray(pyramid14_rows, dtype=int) if pyramid14_rows else _empty_array(15),
-        qtriangles=np.asarray(qtriangle_rows, dtype=int) if qtriangle_rows else _empty_array(7),
+        prism15=(
+            np.asarray(prism15_rows, dtype=int) if prism15_rows else _empty_array(16)
+        ),
+        prism18=(
+            np.asarray(prism18_rows, dtype=int) if prism18_rows else _empty_array(19)
+        ),
+        pyramid=(
+            np.asarray(pyramid_rows, dtype=int) if pyramid_rows else _empty_array(6)
+        ),
+        pyramid13=(
+            np.asarray(pyramid13_rows, dtype=int)
+            if pyramid13_rows
+            else _empty_array(14)
+        ),
+        pyramid14=(
+            np.asarray(pyramid14_rows, dtype=int)
+            if pyramid14_rows
+            else _empty_array(15)
+        ),
+        qtriangles=(
+            np.asarray(qtriangle_rows, dtype=int) if qtriangle_rows else _empty_array(7)
+        ),
         quads8=np.asarray(quad8_rows, dtype=int) if quad8_rows else _empty_array(9),
         quads9=np.asarray(quad9_rows, dtype=int) if quad9_rows else _empty_array(10),
         bounds_min=bounds_min,

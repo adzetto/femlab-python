@@ -4,7 +4,19 @@ from pathlib import Path
 
 import numpy as np
 
-from .. import init, kt3e, load_gmsh, plotbc, plotelem, plotforces, plott3, qt3e, reaction, setload, solve_lag
+from .. import (
+    init,
+    kt3e,
+    load_gmsh,
+    plotbc,
+    plotelem,
+    plotforces,
+    plott3,
+    qt3e,
+    reaction,
+    setload,
+    solve_lag,
+)
 
 
 def default_mesh_path() -> Path:
@@ -19,14 +31,30 @@ def gmsh_triangle_data(mesh_path: str | Path | None = None):
     X = mesh.positions[:, :2]
     G = np.array([[2.0e8, 0.3, 1.0], [0.7e8, 0.23, 1.0]], dtype=float)
     C = np.array(
-        [[5, 1, 0], [7, 1, 0], [8, 1, 0], [8, 2, 0], [9, 2, 0], [10, 2, 0], [9, 1, 0], [10, 1, 0], [11, 1, 0], [6, 1, 0]],
+        [
+            [5, 1, 0],
+            [7, 1, 0],
+            [8, 1, 0],
+            [8, 2, 0],
+            [9, 2, 0],
+            [10, 2, 0],
+            [9, 1, 0],
+            [10, 1, 0],
+            [11, 1, 0],
+            [6, 1, 0],
+        ],
         dtype=float,
     )
     P = np.array([[25, 0, -0.05], [24, 0, -0.1], [22, 0, -0.05]], dtype=float)
     return {"mesh": mesh, "T": T, "X": X, "G": G, "C": C, "P": P, "dof": 2}
 
 
-def run_gmsh_triangle(mesh_path: str | Path | None = None, *, displacement_scale: float = 1000.0, plot: bool = False):
+def run_gmsh_triangle(
+    mesh_path: str | Path | None = None,
+    *,
+    displacement_scale: float = 1000.0,
+    plot: bool = False,
+):
     data = gmsh_triangle_data(mesh_path)
     K, p, q = init(data["X"].shape[0], data["dof"], use_sparse=False)
     K = kt3e(K, data["T"], data["X"], data["G"])
@@ -44,7 +72,9 @@ def run_gmsh_triangle(mesh_path: str | Path | None = None, *, displacement_scale
         plotforces(data["T"], data["X"], data["P"], ax=ax1)
         plotbc(data["T"], data["X"], data["C"], ax=ax1)
         U = u.reshape(data["X"].shape)
-        plotelem(data["T"], data["X"] + displacement_scale * U, line_style="c--", ax=ax1)
+        plotelem(
+            data["T"], data["X"] + displacement_scale * U, line_style="c--", ax=ax1
+        )
         figures.append(fig1)
 
         fig2, ax2 = plt.subplots()

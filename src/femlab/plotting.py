@@ -18,7 +18,9 @@ def _axis(ax=None, ndim: int = 2):
     return axis
 
 
-def plotelem(T, X, line_style: str = "k-", nonum: bool = False, noelem: bool = False, ax=None):
+def plotelem(
+    T, X, line_style: str = "k-", nonum: bool = False, noelem: bool = False, ax=None
+):
     topology = as_float_array(T).astype(int)
     coords = as_float_array(X)
     ndim = coords.shape[1]
@@ -62,7 +64,9 @@ def plotforces(T, X, P, ax=None):
         x0, y0 = coords[node, :2]
         dx = scale * row[1] / max_force
         dy = scale * row[2] / max_force
-        ax.arrow(x0, y0, dx, dy, color="tab:green", width=0.002, length_includes_head=True)
+        ax.arrow(
+            x0, y0, dx, dy, color="tab:green", width=0.002, length_includes_head=True
+        )
     return ax
 
 
@@ -86,7 +90,9 @@ def plotbc(T, X, C, ax=None):
         else:
             dx = value if dof == 1 else 0.0
             dy = value if dof == 2 else 0.0
-            ax.arrow(x0, y0, dx, dy, color="tab:red", width=0.002, length_includes_head=True)
+            ax.arrow(
+                x0, y0, dx, dy, color="tab:red", width=0.002, length_includes_head=True
+            )
     return ax
 
 
@@ -112,15 +118,18 @@ def plotq4(T, X, S, scomp: int, ax=None):
     for i in range(2):
         for j in range(2):
             gp = i + 3 * j - 2 * i * j
-            N[gp] = np.array(
-                [
-                    (1.0 - r[i]) * (1.0 - r[j]),
-                    (1.0 + r[i]) * (1.0 - r[j]),
-                    (1.0 + r[i]) * (1.0 + r[j]),
-                    (1.0 - r[i]) * (1.0 + r[j]),
-                ],
-                dtype=float,
-            ) / 4.0
+            N[gp] = (
+                np.array(
+                    [
+                        (1.0 - r[i]) * (1.0 - r[j]),
+                        (1.0 + r[i]) * (1.0 - r[j]),
+                        (1.0 + r[i]) * (1.0 + r[j]),
+                        (1.0 - r[i]) * (1.0 + r[j]),
+                    ],
+                    dtype=float,
+                )
+                / 4.0
+            )
     nodal_values = np.zeros((coords.shape[0],), dtype=float)
     counts = np.zeros((coords.shape[0],), dtype=float)
     component_index = scomp - 1
@@ -133,7 +142,9 @@ def plotq4(T, X, S, scomp: int, ax=None):
     nodal_values /= np.maximum(counts, 1.0)
     triangles = _triangulate_quads(topology) - 1
     ax = _axis(ax, 2)
-    trip = ax.tripcolor(coords[:, 0], coords[:, 1], triangles, nodal_values, shading="gouraud")
+    trip = ax.tripcolor(
+        coords[:, 0], coords[:, 1], triangles, nodal_values, shading="gouraud"
+    )
     ax.set_aspect("equal", adjustable="box")
     plt.colorbar(trip, ax=ax)
     return ax
@@ -154,7 +165,9 @@ def plott3(T, X, S, scomp: int, ax=None):
     nodal_values /= np.maximum(counts, 1.0)
     triangles = topology[:, :-1] - 1
     ax = _axis(ax, 2)
-    trip = ax.tripcolor(coords[:, 0], coords[:, 1], triangles, nodal_values, shading="flat")
+    trip = ax.tripcolor(
+        coords[:, 0], coords[:, 1], triangles, nodal_values, shading="flat"
+    )
     ax.set_aspect("equal", adjustable="box")
     plt.colorbar(trip, ax=ax)
     return ax
@@ -173,7 +186,9 @@ def plotu(T, X, u, ax=None):
             nodes = row[:-1] - 1
             polygons.append(coords[nodes, :2])
             colors.append(values[nodes].mean())
-        collection = PolyCollection(polygons, array=np.asarray(colors), cmap="viridis", edgecolors="k")
+        collection = PolyCollection(
+            polygons, array=np.asarray(colors), cmap="viridis", edgecolors="k"
+        )
         ax.add_collection(collection)
         ax.autoscale()
         ax.set_aspect("equal", adjustable="box")
@@ -186,7 +201,9 @@ def plotu(T, X, u, ax=None):
         nodes = row[:-1] - 1
         polygons3d.append(coords[nodes, :3])
         colors.append(values[nodes].mean())
-    collection = Poly3DCollection(polygons3d, array=np.asarray(colors), cmap="viridis", edgecolors="k")
+    collection = Poly3DCollection(
+        polygons3d, array=np.asarray(colors), cmap="viridis", edgecolors="k"
+    )
     ax.add_collection3d(collection)
     ax.auto_scale_xyz(coords[:, 0], coords[:, 1], coords[:, 2])
     plt.colorbar(collection, ax=ax)

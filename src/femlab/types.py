@@ -9,8 +9,12 @@ import numpy as np
 class GmshMesh:
     positions: np.ndarray
     element_infos: np.ndarray
-    element_tags: np.ndarray = field(default_factory=lambda: np.zeros((0, 0), dtype=int))
-    element_nodes: np.ndarray = field(default_factory=lambda: np.zeros((0, 0), dtype=int))
+    element_tags: np.ndarray = field(
+        default_factory=lambda: np.zeros((0, 0), dtype=int)
+    )
+    element_nodes: np.ndarray = field(
+        default_factory=lambda: np.zeros((0, 0), dtype=int)
+    )
     nb_type: np.ndarray = field(default_factory=lambda: np.zeros(19, dtype=int))
     points: np.ndarray = field(default_factory=lambda: np.zeros((0, 2), dtype=int))
     lines: np.ndarray = field(default_factory=lambda: np.zeros((0, 3), dtype=int))
@@ -34,6 +38,8 @@ class GmshMesh:
     bounds_min: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=float))
     bounds_max: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=float))
 
-    def property_numbers(self, element_refs: np.ndarray, *, info_column: int = 4) -> np.ndarray:
+    def property_numbers(
+        self, element_refs: np.ndarray, *, info_column: int = 4
+    ) -> np.ndarray:
         refs = np.asarray(element_refs, dtype=int).ravel()
         return self.element_infos[refs - 1, info_column]

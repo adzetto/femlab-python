@@ -63,14 +63,20 @@ ks = 0.1*max(diag(K));
 N=size(K,1);
 
 for i = 1:size(C,1)
-  Cdof = (C(i,1)-1)*dof+C(i,2);
+  if dof==1 & size(C,2)==2 then
+    Cdof = C(i,1);
+    cval = C(i,2);
+  else
+    Cdof = (C(i,1)-1)*dof+C(i,2);
+    cval = C(i,3);
+  end
   K(:,Cdof)=zeros(N,1);
   K(Cdof,:)=zeros(1,N);
   K(Cdof,Cdof)=ks;
 
-  p=p-K(:,Cdof)*C(i,3);
-  p(Cdof)=ks*C(i,3);  // the corresponding displ. will
-                      // be equal to its constraint value
+  p=p-K(:,Cdof)*cval;
+  p(Cdof)=ks*cval;  // the corresponding displ. will
+                    // be equal to its constraint value
 end
 
 endfunction

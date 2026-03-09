@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from .._helpers import as_float_array, cols, material_row, rows, topology_nodes, topology_property
+from .._helpers import (
+    as_float_array,
+    cols,
+    material_row,
+    rows,
+    topology_nodes,
+    topology_property,
+)
 from ..assembly import assmk, assmq
 
 
@@ -21,9 +28,9 @@ def kebar(Xe0, Xe1, Ge):
     strain = 0.5 * (l1**2 - l0**2) / l0**2
     normal_force = A * E * strain
     identity = np.eye(a0.shape[0], dtype=float)
-    return (E * A / l0**3) * np.block([[a1 @ a1.T, -a1 @ a1.T], [-a1 @ a1.T, a1 @ a1.T]]) + (
-        normal_force / l0
-    ) * np.block([[identity, -identity], [-identity, identity]])
+    return (E * A / l0**3) * np.block(
+        [[a1 @ a1.T, -a1 @ a1.T], [-a1 @ a1.T, a1 @ a1.T]]
+    ) + (normal_force / l0) * np.block([[identity, -identity], [-identity, identity]])
 
 
 def qebar(Xe0, Xe1, Ge):

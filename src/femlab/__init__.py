@@ -2,10 +2,8 @@ from .assembly import assmk, assmq
 from .boundary import rnorm, setbc, solve_lag
 from .core import cols, init, rows
 from .elements import (
-    kT4e,
     kbar,
     kebar,
-    keT4e,
     keh8e,
     keq4e,
     keq4epe,
@@ -13,6 +11,7 @@ from .elements import (
     keq4p,
     ket3e,
     ket3p,
+    keT4e,
     kh8e,
     kq4e,
     kq4epe,
@@ -20,24 +19,25 @@ from .elements import (
     kq4p,
     kt3e,
     kt3p,
-    qT4e,
+    kT4e,
     qbar,
     qebar,
-    qeT4e,
     qeh8e,
     qeq4e,
     qeq4epe,
     qeq4eps,
     qeq4p,
-    qh8e,
     qet3e,
     qet3p,
+    qeT4e,
+    qh8e,
     qq4e,
     qq4epe,
     qq4eps,
     qq4p,
     qt3e,
     qt3p,
+    qT4e,
 )
 from .io import load_gmsh, load_gmsh2
 from .loads import addload, setload

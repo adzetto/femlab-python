@@ -12,36 +12,57 @@ def _plane_elastic_matrix(Ge, *, plane_strain: bool = False):
     E = props[0]
     nu = props[1]
     if not plane_strain:
-        return E / (1.0 - nu**2) * np.array(
-            [[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]],
+        return (
+            E
+            / (1.0 - nu**2)
+            * np.array(
+                [[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]],
+                dtype=float,
+            )
+        )
+    return (
+        E
+        / ((1.0 + nu) * (1.0 - 2.0 * nu))
+        * np.array(
+            [
+                [1.0 - nu, nu, nu, 0.0],
+                [nu, 1.0 - nu, nu, 0.0],
+                [nu, nu, 1.0 - nu, 0.0],
+                [0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0],
+            ],
             dtype=float,
         )
-    return E / ((1.0 + nu) * (1.0 - 2.0 * nu)) * np.array(
-        [
-            [1.0 - nu, nu, nu, 0.0],
-            [nu, 1.0 - nu, nu, 0.0],
-            [nu, nu, 1.0 - nu, 0.0],
-            [0.0, 0.0, 0.0, (1.0 - 2.0 * nu) / 2.0],
-        ],
-        dtype=float,
     )
 
 
 def _q4_dN(r_i: float, r_j: float, nnodes: int):
-    dN = np.array(
-        [
-            [-(1.0 - r_j), 1.0 - r_j, 1.0 + r_j, -(1.0 + r_j)],
-            [-(1.0 - r_i), -(1.0 + r_i), 1.0 + r_i, 1.0 - r_i],
-        ],
-        dtype=float,
-    ) / 4.0
+    dN = (
+        np.array(
+            [
+                [-(1.0 - r_j), 1.0 - r_j, 1.0 + r_j, -(1.0 + r_j)],
+                [-(1.0 - r_i), -(1.0 + r_i), 1.0 + r_i, 1.0 - r_i],
+            ],
+            dtype=float,
+        )
+        / 4.0
+    )
     if nnodes != 8:
         return dN
 
     dN8 = np.array(
         [
-            [-r_i * (1.0 - r_j), 0.5 * (1.0 - r_j**2), -r_i * (1.0 + r_j), -0.5 * (1.0 - r_j**2)],
-            [-0.5 * (1.0 - r_i**2), -r_j * (1.0 + r_i), 0.5 * (1.0 - r_i**2), -r_j * (1.0 - r_i)],
+            [
+                -r_i * (1.0 - r_j),
+                0.5 * (1.0 - r_j**2),
+                -r_i * (1.0 + r_j),
+                -0.5 * (1.0 - r_j**2),
+            ],
+            [
+                -0.5 * (1.0 - r_i**2),
+                -r_j * (1.0 + r_i),
+                0.5 * (1.0 - r_i**2),
+                -r_j * (1.0 - r_i),
+            ],
         ],
         dtype=float,
     )
@@ -152,15 +173,18 @@ def keq4p(Xe, Ge):
     r, w = _q4_gauss_points()
     for i in range(2):
         for j in range(2):
-            N = np.array(
-                [
-                    (1.0 - r[i]) * (1.0 - r[j]),
-                    (1.0 + r[i]) * (1.0 - r[j]),
-                    (1.0 + r[i]) * (1.0 + r[j]),
-                    (1.0 - r[i]) * (1.0 + r[j]),
-                ],
-                dtype=float,
-            ).reshape(1, -1) / 4.0
+            N = (
+                np.array(
+                    [
+                        (1.0 - r[i]) * (1.0 - r[j]),
+                        (1.0 + r[i]) * (1.0 - r[j]),
+                        (1.0 + r[i]) * (1.0 + r[j]),
+                        (1.0 - r[i]) * (1.0 + r[j]),
+                    ],
+                    dtype=float,
+                ).reshape(1, -1)
+                / 4.0
+            )
             dN = _q4_dN(r[i], r[j], 4)
             Jt = dN @ Xe
             B = np.linalg.solve(Jt, dN)
@@ -209,7 +233,9 @@ def qq4p(q, T, X, G, u):
     for i, row in enumerate(topology):
         nodes = topology_nodes(row)
         prop = topology_property(row)
-        qe, Se, Ee = qeq4p(coordinates[nodes - 1], material_row(G, prop), potentials[nodes - 1])
+        qe, Se, Ee = qeq4p(
+            coordinates[nodes - 1], material_row(G, prop), potentials[nodes - 1]
+        )
         q = assmq(q, qe, row, 1)
         S[i] = Se.reshape(1, 8)
         E[i] = Ee.reshape(1, 8)
@@ -230,7 +256,7 @@ def _ensure_state_width(state, element_count: int, width: int):
 
 
 def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
-    VonMises = 1
+    _VonMises = 1  # noqa: F841
     DruckerPrager = 2
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -243,7 +269,11 @@ def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
     S0 = props[2]
     H = props[3]
     phi = props[4] if mtype == DruckerPrager and props.size == 5 else 0.0
-    D = E / (1.0 - nu**2) * np.array([[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]])
+    D = (
+        E
+        / (1.0 - nu**2)
+        * np.array([[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]])
+    )
     mu = E / (2.0 * (1.0 + nu))
     k = E / (3.0 * (1.0 - nu))
     Ke = np.zeros((8, 8), dtype=float)
@@ -264,13 +294,30 @@ def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
             if f < 0.0:
                 Dep = D
             else:
-                a = np.array([Sd[0, 0] + nu * Sd[1, 0], nu * Sd[0, 0] + Sd[1, 0], (1.0 - nu) * Sd[2, 0]]).reshape(-1, 1)
+                a = np.array(
+                    [
+                        Sd[0, 0] + nu * Sd[1, 0],
+                        nu * Sd[0, 0] + Sd[1, 0],
+                        (1.0 - nu) * Sd[2, 0],
+                    ]
+                ).reshape(-1, 1)
                 a = (3.0 * E / (2.0 * Seq * (1.0 - nu**2))) * a
                 if phi == 0.0:
-                    factor = 3.0 * mu * (1.0 - (1.0 - 2.0 * nu) * (3.0 * Sm) ** 2 / (6.0 * (1.0 - nu) * Seq**2))
+                    factor = (
+                        3.0
+                        * mu
+                        * (
+                            1.0
+                            - (1.0 - 2.0 * nu)
+                            * (3.0 * Sm) ** 2
+                            / (6.0 * (1.0 - nu) * Seq**2)
+                        )
+                    )
                 else:
                     a = a + k * phi * np.array([[1.0], [1.0], [0.0]])
-                    b = (3.0 / (2.0 * Seq)) * np.array([[Sd[0, 0]], [Sd[1, 0]], [2.0 * Sd[2, 0]]]) + phi / 3.0 * np.array([[1.0], [1.0], [0.0]])
+                    b = (3.0 / (2.0 * Seq)) * np.array(
+                        [[Sd[0, 0]], [Sd[1, 0]], [2.0 * Sd[2, 0]]]
+                    ) + phi / 3.0 * np.array([[1.0], [1.0], [0.0]])
                     factor = float(b.T @ a)
                 Dep = D - (a @ a.T) / (H + factor)
             Ke += w[i] * w[j] * (B.T @ Dep @ B) * np.linalg.det(Jt)
@@ -278,7 +325,7 @@ def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
 
 
 def qeq4eps(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
-    VonMises = 1
+    _VonMises = 1  # noqa: F841
     DruckerPrager = 2
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -292,7 +339,11 @@ def qeq4eps(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
     S0 = props[2]
     H = props[3]
     phi = props[4] if mtype == DruckerPrager and props.size == 5 else 0.0
-    D = E / (1.0 - nu**2) * np.array([[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]])
+    D = (
+        E
+        / (1.0 - nu**2)
+        * np.array([[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1.0 - nu) / 2.0]])
+    )
     qe = np.zeros((8, 1), dtype=float)
 
     for i in range(2):
@@ -310,7 +361,7 @@ def qeq4eps(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
             S = Se[gp, 0:3].reshape(-1, 1) + dS
             Ep = Ee[gp, 3]
             Sy = S0 + Ep * H
-            Sd, Sm = devstress(S)
+            _Sd, Sm = devstress(S)
             Seq = eqstress(S)
             f = Seq + phi * Sm - Sy
 
@@ -339,7 +390,12 @@ def kq4eps(K, T, X, G, S, E, mtype: int = 1):
         prop = topology_property(row)
         Se = S[i].reshape(4, 4)
         Ee = E[i].reshape(4, 4)
-        K = assmk(K, keq4eps(coordinates[nodes - 1], material_row(G, prop), Se, Ee, mtype), row, 2)
+        K = assmk(
+            K,
+            keq4eps(coordinates[nodes - 1], material_row(G, prop), Se, Ee, mtype),
+            row,
+            2,
+        )
     return K
 
 
@@ -355,7 +411,14 @@ def qq4eps(q, T, X, G, u, S, E, mtype: int = 1):
         nodes = topology_nodes(row)
         prop = topology_property(row)
         Ue = U[nodes - 1].reshape(-1, 1)
-        qe, Sen, Een = qeq4eps(coordinates[nodes - 1], material_row(G, prop), Ue, S[i].reshape(4, 4), E[i].reshape(4, 4), mtype)
+        qe, Sen, Een = qeq4eps(
+            coordinates[nodes - 1],
+            material_row(G, prop),
+            Ue,
+            S[i].reshape(4, 4),
+            E[i].reshape(4, 4),
+            mtype,
+        )
         q = assmq(q, qe, row, coordinates.shape[1])
         Sn[i] = Sen.reshape(1, 16)
         En[i] = Een.reshape(1, 16)
@@ -381,9 +444,20 @@ def keq4epe(Xe, Ge, Se, Ee, mtype: int = 1):
     dN0 = np.array([[-1.0, 1.0, 1.0, -1.0], [-1.0, -1.0, 1.0, 1.0]], dtype=float) / 4.0
     Jt0 = dN0 @ Xe
     dN0 = np.linalg.solve(Jt0, dN0)
-    W = np.array([dN0[0, 0], dN0[1, 0], dN0[0, 1], dN0[1, 1], dN0[0, 2], dN0[1, 2], dN0[0, 3], dN0[1, 3]])
+    W = np.array(
+        [
+            dN0[0, 0],
+            dN0[1, 0],
+            dN0[0, 1],
+            dN0[1, 1],
+            dN0[0, 2],
+            dN0[1, 2],
+            dN0[0, 3],
+            dN0[1, 3],
+        ]
+    )
     m = np.array([[1.0], [1.0], [0.0], [0.0]])
-    I = np.eye(4, dtype=float)
+    I4 = np.eye(4, dtype=float)
 
     Ke = np.zeros((8, 8), dtype=float)
     r, w = _q4_gauss_points()
@@ -395,14 +469,41 @@ def keq4epe(Xe, Ge, Se, Ee, mtype: int = 1):
             dN_global = np.linalg.solve(Jt, dN)
             B = np.array(
                 [
-                    [dN_global[0, 0], 0.0, dN_global[0, 1], 0.0, dN_global[0, 2], 0.0, dN_global[0, 3], 0.0],
-                    [0.0, dN_global[1, 0], 0.0, dN_global[1, 1], 0.0, dN_global[1, 2], 0.0, dN_global[1, 3]],
+                    [
+                        dN_global[0, 0],
+                        0.0,
+                        dN_global[0, 1],
+                        0.0,
+                        dN_global[0, 2],
+                        0.0,
+                        dN_global[0, 3],
+                        0.0,
+                    ],
+                    [
+                        0.0,
+                        dN_global[1, 0],
+                        0.0,
+                        dN_global[1, 1],
+                        0.0,
+                        dN_global[1, 2],
+                        0.0,
+                        dN_global[1, 3],
+                    ],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [dN_global[1, 0], dN_global[0, 0], dN_global[1, 1], dN_global[0, 1], dN_global[1, 2], dN_global[0, 2], dN_global[1, 3], dN_global[0, 3]],
+                    [
+                        dN_global[1, 0],
+                        dN_global[0, 0],
+                        dN_global[1, 1],
+                        dN_global[0, 1],
+                        dN_global[1, 2],
+                        dN_global[0, 2],
+                        dN_global[1, 3],
+                        dN_global[0, 3],
+                    ],
                 ],
                 dtype=float,
             )
-            B = (I - 0.5 * (m @ m.T)) @ B + 0.5 * (m @ W.reshape(1, -1))
+            B = (I4 - 0.5 * (m @ m.T)) @ B + 0.5 * (m @ W.reshape(1, -1))
 
             Ep = Ee[gp, 4]
             Sy = S0 + Ep * H
@@ -442,9 +543,20 @@ def qeq4epe(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
     dN0 = np.array([[-1.0, 1.0, 1.0, -1.0], [-1.0, -1.0, 1.0, 1.0]], dtype=float) / 4.0
     Jt0 = dN0 @ Xe
     dN0 = np.linalg.solve(Jt0, dN0)
-    W = np.array([dN0[0, 0], dN0[1, 0], dN0[0, 1], dN0[1, 1], dN0[0, 2], dN0[1, 2], dN0[0, 3], dN0[1, 3]])
+    W = np.array(
+        [
+            dN0[0, 0],
+            dN0[1, 0],
+            dN0[0, 1],
+            dN0[1, 1],
+            dN0[0, 2],
+            dN0[1, 2],
+            dN0[0, 3],
+            dN0[1, 3],
+        ]
+    )
     m = np.array([[1.0], [1.0], [0.0], [0.0]])
-    I = np.eye(4, dtype=float)
+    I4 = np.eye(4, dtype=float)
 
     qe = np.zeros((8, 1), dtype=float)
     r, w = _q4_gauss_points()
@@ -456,14 +568,41 @@ def qeq4epe(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
             dN_global = np.linalg.solve(Jt, dN)
             B = np.array(
                 [
-                    [dN_global[0, 0], 0.0, dN_global[0, 1], 0.0, dN_global[0, 2], 0.0, dN_global[0, 3], 0.0],
-                    [0.0, dN_global[1, 0], 0.0, dN_global[1, 1], 0.0, dN_global[1, 2], 0.0, dN_global[1, 3]],
+                    [
+                        dN_global[0, 0],
+                        0.0,
+                        dN_global[0, 1],
+                        0.0,
+                        dN_global[0, 2],
+                        0.0,
+                        dN_global[0, 3],
+                        0.0,
+                    ],
+                    [
+                        0.0,
+                        dN_global[1, 0],
+                        0.0,
+                        dN_global[1, 1],
+                        0.0,
+                        dN_global[1, 2],
+                        0.0,
+                        dN_global[1, 3],
+                    ],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [dN_global[1, 0], dN_global[0, 0], dN_global[1, 1], dN_global[0, 1], dN_global[1, 2], dN_global[0, 2], dN_global[1, 3], dN_global[0, 3]],
+                    [
+                        dN_global[1, 0],
+                        dN_global[0, 0],
+                        dN_global[1, 1],
+                        dN_global[0, 1],
+                        dN_global[1, 2],
+                        dN_global[0, 2],
+                        dN_global[1, 3],
+                        dN_global[0, 3],
+                    ],
                 ],
                 dtype=float,
             )
-            B = (I - 0.5 * (m @ m.T)) @ B + 0.5 * (m @ W.reshape(1, -1))
+            B = (I4 - 0.5 * (m @ m.T)) @ B + 0.5 * (m @ W.reshape(1, -1))
 
             e = B @ Ue
             dE = e - Ee[gp, 0:4].reshape(-1, 1)
@@ -497,7 +636,18 @@ def kq4epe(K, T, X, G, S, E, mtype: int = 1):
     for i, row in enumerate(topology):
         nodes = topology_nodes(row)
         prop = topology_property(row)
-        K = assmk(K, keq4epe(coordinates[nodes - 1], material_row(G, prop), S[i].reshape(4, 5), E[i].reshape(4, 5), mtype), row, 2)
+        K = assmk(
+            K,
+            keq4epe(
+                coordinates[nodes - 1],
+                material_row(G, prop),
+                S[i].reshape(4, 5),
+                E[i].reshape(4, 5),
+                mtype,
+            ),
+            row,
+            2,
+        )
     return K
 
 
@@ -513,7 +663,14 @@ def qq4epe(q, T, X, G, u, S, E, mtype: int = 1):
         nodes = topology_nodes(row)
         prop = topology_property(row)
         Ue = U[nodes - 1].reshape(-1, 1)
-        qe, Sen, Een = qeq4epe(coordinates[nodes - 1], material_row(G, prop), Ue, S[i].reshape(4, 5), E[i].reshape(4, 5), mtype)
+        qe, Sen, Een = qeq4epe(
+            coordinates[nodes - 1],
+            material_row(G, prop),
+            Ue,
+            S[i].reshape(4, 5),
+            E[i].reshape(4, 5),
+            mtype,
+        )
         q = assmq(q, qe, row, coordinates.shape[1])
         Sn[i] = Sen.reshape(1, 20)
         En[i] = Een.reshape(1, 20)
