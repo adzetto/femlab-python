@@ -1,0 +1,63 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>KeQ4EPS</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>KeQ4EPS</b> -  Assembly of System Matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+  Ke = keq4eps(Xe,Ge,Se,Ee)<br>
+  Ke = keq4eps(Xe,Ge,Se,Ee,type)
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>Xe</b></tt>: Coordinates Xe = [x1 y1; x2 y2; x3 y3; x4 y4].</li>
+  <li><tt><b>Ge</b></tt>: Element material data Ge = [E nu S0 H phi]
+  <li><tt><b>Se</b></tt>: Element stress matrix Se = [Sx Sy Sxy Seq<br> 
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp......]<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp with one row for each Gauss point
+  <li><tt><b>Ee</b></tt>: Element stress matrix Se = [Ex Ey 2Exy Ep<br> 
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp......]<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp with one row for each Gauss point. Seq is the <br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp equivalent stress.  Ep is the total equivalent<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp  plastic strain. <br>
+  <li><tt><b>type</b></tt>:parameter setting material model<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp type = 1 -> Von Mises (default)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp type = 2 -> Drucker-Prager <br>
+                         
+  <p> <b>Output:</b></p>
+ <li><tt><b>Ke</b></tt>: Element tangent stiffness matrix.
+ 
+ 
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+   Creates the element tangent stiffness matrix 
+   of elasto-plastic quadrilateral 4-node element
+   in plane stress. 
+   The material  model is von Mises or associated 
+   Drucker-Prager with linear isotropic hardening. 
+
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

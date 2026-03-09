@@ -1,0 +1,45 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>companion</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>solve_lag</b> -  Solution of the linear system with Boundary Conditions </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div> 
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+   u = solve(K,p) <br>
+   u = solve(K,p,C,dof)
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b> K </b></tt>: global matrix</li>
+  <li><tt><b> p </b></tt>: global load vector.</li>
+  <li><tt><b> C </b></tt>: Constraint Matrix.</li>
+  <li><tt><b> dof </b></tt>: degrees of freedom per node.</li>
+<p> <b>Output:</b></p>
+  <li><tt><b> K </b></tt>: updated global matrix.</li>
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+   Solves the sytem matrices to obtain the Global
+   structural displacement vector by using the 
+   Lagrange Multiplier Method.
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> G.Turan, 15.03.2006 </p>
+</body>
+</html>

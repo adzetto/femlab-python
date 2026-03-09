@@ -1,0 +1,61 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>KeQ4E</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>KeQ4E</b> -  Creates the element stiffness matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+  Ke = keq4e(Xe,Ge)
+
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>Xe</b></tt>: coordinates Xe = [x1 y1; x2 y2; x3 y3; x4 y4] </li><br> 
+  <li><tt><b>Ge</b></tt>: element material data: [E , nu , (type)] <br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp optional: type = 1 : plane stress (default)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp  type = 2 : plane strain <br>
+
+  
+ 
+  
+
+
+                           
+  <p> <b>Output:</b></p>
+ <li><tt><b>Ke</b></tt>: element stiffness matrix.</li> 
+ 
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+   Creates the element stiffness matrix of elastic
+   quadrilateral 4-node element in plane stress or 
+   plane strain.<br>
+   If Xe contains 8 node coordinate set the stiff-
+   ness matrix of 8-node element with quadratic 
+   shape functions is evaluated using reduced 
+   integration
+
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

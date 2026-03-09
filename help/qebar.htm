@@ -1,0 +1,60 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>QeBar</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>QeBar</b> -  Assembly of System Matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+   qe = qebar(Xe0,Xe1,Ge)
+
+
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>Xe0</b></tt>:initial coordinates = [x1    y1    (z1)
+                                           <br>  x2    y2    (z3)   ].</li>.<br>  
+
+  <li><tt><b>Xe1</b></tt>: current coordinates = [x1+u1 y1+v1 (z1+w1)
+                                            <br>  x2+u2 y2+v2 (z3+w2)].</li>.<br>
+
+  <li><tt><b>Ge</b></tt>:  element properties Ge = [A E] or Ge = AE.</li> 
+ 
+  
+
+
+ <p> <b>Output:</b></p>
+ <li><tt><b>qe</b></tt>: element nodal force vector.</li> 
+ <li><tt><b>Se</b></tt>: element axial stress.</li> 
+ <li><tt><b>Ee</b></tt>: element axial strain.</li> 
+  
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+    Evaluates the strain and stress for the current
+    displacements. Creates the element internal
+    force vector for elastic bar element.
+
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

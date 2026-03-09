@@ -1,0 +1,66 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title> KQ4EPS</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b> KQ4EPS</b> -  Assembly of System Matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+  K = kq4eps(K,T,X,G,S,E)
+  K = kq4eps(K,T,X,G,S,E,type)
+
+
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>K</b></tt>: initial global stiffness matrix.</li>
+  <li><tt><b>T</b></tt>: element topology matrix.</li>
+  <li><tt><b>X</b></tt>: node coordinate matrix.</li>
+  <li><tt><b>G</b></tt>: material property matrix.</li>
+  <li><tt><b>S</b></tt>: current stress matrix.</li>
+  <li><tt><b>E</b></tt>: current strain matrix.</li>
+  <li><tt><b>mtype</b></tt>: parameter setting material model<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp mtype = 1 -> Von Mises<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp mtype = 2 -> Drucker-Prager
+ 
+
+  
+ 
+  
+
+
+                           
+  <p> <b>Output:</b></p>
+ <li><tt><b>K</b></tt>: new global tangent stiffness matrix.</li> 
+ 
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+  Creates and assembles tangent stiffness matrix
+   for a group of elasto-plastic quadrilateral
+   4-node elements in plane stress.
+
+
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

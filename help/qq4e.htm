@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title> QQ4E</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b> QQ4E</b> -  Assembly of System Matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+  [q,S,E] = qq4e(q,T,X,G,u)
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>q</b></tt>: initial global force matrix.</li>
+  <li><tt><b>T</b></tt>: element topology matrix.</li>
+  <li><tt><b>X</b></tt>: node coordinate matrix. </li>
+  <li><tt><b>G</b></tt>: material property matrix. </li>
+  <li><tt><b>u</b></tt>: global displacement vector. </li>
+
+
+                           
+  <p> <b>Output:</b></p>
+ <li><tt><b>q</b></tt>: new global internal force vector.</li> 
+ <li><tt><b>S</b></tt>: global stress matrix.
+ <li><tt><b>E</b></tt>: global strain matrix.
+
+
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+   Creates and assembles internal force vector,
+   stress matrix and strain matrix for a group of
+   elastic quadrilateral 4-node elements in plane
+   stress or plane strain.
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

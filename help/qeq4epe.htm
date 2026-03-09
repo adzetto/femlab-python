@@ -1,0 +1,72 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>QeQ4EPE</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>QeQ4EPE</b> -  Assembly of System Matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+   [qe,Se,Ee] = qeq4epe(Xe,Ge,Ue,Se,Ee)<br>
+   [qe,Se,Ee] = qeq4epe(Xe,Ge,Ue,Se,Ee,type)
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>Xe</b></tt>: Coordinates Xe = [x1 y1; x2 y2; x3 y3; x4 y4]</li><br> 
+  <li><tt><b>Ge</b></tt>: Element material data: [E , nu, Sy, H, phi]
+  <li><tt><b>Ue</b></tt>: Element nodal displacements [u1; v1; u2; v2...]
+  <li><tt><b>Se</b></tt>: Element stress matrix: [ Sx Sy Sz Sxy Seq<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp   ...] 
+  <li><tt><b>Ee</b></tt>: Element strain matrix: [ Ex Ey Ez Exy Ep<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp  ...]<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp with one row for each Gauss point. Seq is the<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp consistent equivalent stress. Ep is the total<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp equivalent plastic strain.
+  
+   <li><tt><b>mtype</b></tt>: parameter setting material model</li><br> 
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp   mtype = 1 -> Von Mises (default)<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp   mtype = 2 -> Drucker-Prager</li>
+                       
+
+
+
+                           
+  <p> <b>Output:</b></p>
+ <li><tt><b>qe</b></tt>: Element internal force vector.</li> 
+ <li><tt><b>Se</b></tt>: Updated element stresses.</li> 
+ <li><tt><b>Ee</b></tt>: Updated element strains.</li> 
+  
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+     Evaluates the stress and strain for the current
+   displacements. Creates the element internal
+   force vector for elastic quadrilateral 4-node
+   element in plane stress or plane strain.
+   If Xe contains 8 node coordinate set the inter-
+   nal force vector of 8-node element with quadratic 
+   shape functions is evaluated using reduced 
+   integration.
+
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

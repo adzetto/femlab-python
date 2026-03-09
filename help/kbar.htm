@@ -1,0 +1,46 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>kbar</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>kbar</b> -  Assembly of Tangent Stiffness Matrix of bar element </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div> 
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+   K = kbar(K,T,X,G,u) <br>
+   K = kbar(K,T,X,G)
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>K</b></tt>: existing global stiffness matrix</li>
+  <li><tt><b>T</b></tt>: topology matrix for bar elements.</li>
+  <li><tt><b>X</b></tt>: initial node coordinate matrix.</li>
+  <li><tt><b>G</b></tt>: bar element property matrix.</li>
+  <li><tt><b>u</b></tt>: displacement vector.</li>
+
+<p> <b>Output:</b></p>
+  <li><tt><b>K</b></tt>: new global tangent stiffness matrix.</li>
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+   Creates and assembles tangent stiffness matrix
+   of elastic bar elements.
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="kebar.htm"><tt><b>kebar</b></tt></a>
+    <a href="assmk.htm"><tt><b>assmk</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

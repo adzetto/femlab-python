@@ -1,0 +1,75 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>QeQ4E</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>QeQ4E</b> -  Assembly of System Matrix </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     
+   [qe, = qeq4e(Xe,Ge,Ue)
+
+
+
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>Xe</b></tt>:node coordinates.</li><br> 
+&nbsp&nbsp&nbsp&nbsp&nbsp   Xe = [x1 y1; x2 y2; x3 y3; x4 y4]<br>.</li> 
+
+                                   
+  <li><tt><b>Ge</b></tt>:element material data: [E , nu , (type)]</li><br>
+   &nbsp&nbsp&nbsp&nbsp&nbsp optional: type = 1 : plane stress (default)<br></li>
+          &nbsp&nbsp&nbsp&nbsp&nbsp    type = 2 : plane strain<br></li>
+ 
+                         
+
+  <li><tt><b>Ue</b></tt>: element displacement vector: </li><br> 
+   &nbsp&nbsp&nbsp&nbsp&nbsp   Ue = [u1;v1;u2;v2;u3;v3;u4;v4] </li>
+                       
+
+
+
+                                              
+                          
+
+
+ <p> <b>Output:</b></p>
+ <li><tt><b>qe</b></tt>: internal force vector.</li> 
+ <li><tt><b>Se</b></tt>: element stress vector.</li> 
+ <li><tt><b>Ee</b></tt>: element strain vector.</li> 
+  
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+     Evaluates the stress and strain for the current
+   displacements. Creates the element internal
+   force vector for elastic quadrilateral 4-node
+   element in plane stress or plane strain.
+   If Xe contains 8 node coordinate set the inter-
+   nal force vector of 8-node element with quadratic 
+   shape functions is evaluated using reduced 
+   integration.
+
+
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<p>
+    <a href="assmq.htm"><tt><b>assmq</b></tt></a>
+</p>
+<h3><font color="blue">Author</font></h3>
+<p> O.Hededal and S.Krenk </p>
+</body>
+</html>

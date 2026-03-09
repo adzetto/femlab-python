@@ -1,0 +1,50 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Load_Gmsh</title>
+</head>
+<body bgcolor="#FFFFFF">
+<center>Scilab Function</center>
+
+<p><b>load_gmsh</b> -  Load mesh data from Gmsh output file  </p>
+<div align="right">FemLab Version 1.0,  04.05.95</div>
+<h3><font color="blue">Calling Sequence</font></h3>
+<dl><dd><tt>
+     <br> gmesh = load_gmsh(filename)<br>
+     
+
+
+
+
+</tt></dd></dl>
+<h3><font color="blue">Parameters</font></h3>
+<ul>
+<p> <b>Input:</b></p>
+  <li><tt><b>filename</b></tt>: Filename of the mesh data (output of Gmsh Version 1.0) </li>
+
+
+ <p> <b>Output:</b></p>
+  <li><tt><b>gmesh</b></tt>: structure variable</li>
+  <li><tt><b>gmesh.nbNod</b></tt>: gives the number of nodes</li>
+  <li><tt><b>gmesh.LINES</b></tt>: gives the topology matrix of line elements.</li>
+  <li><tt><b>gmesh.QUAD</b></tt>: gives the topology matrix of quad elements.</li>
+<br>
+  <li>Type <b>gmesh</b> to see all available data.</li>
+
+</ul>
+<h3><font color="blue">Description</font></h3>
+<p>
+    Reads the mesh output file of the pre- and post processor, GMSH, which is freely available at http://www.geuz.org/gmsh .
+
+</p>
+
+<h3><font color="blue">Examples</font></h3>
+<pre>
+</pre>
+
+<h3><font color="blue">See Also</font></h3>
+<h3><font color="blue">Author</font></h3>
+<p> Originally given as a m-file <br>
+    modfied by G.Turan to work with Scilab </p>
+</body>
+</html>
