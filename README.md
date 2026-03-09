@@ -38,7 +38,7 @@ This repository preserves three layers of the project:
 
 ### Python Package File Dependency Graph
 
-Every module cleanly depends on `_helpers.py` — **no circular imports** anywhere in the tree.
+Every module depends on `_helpers.py`.
 
 ```mermaid
 graph BT
