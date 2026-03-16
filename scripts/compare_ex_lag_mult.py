@@ -13,7 +13,14 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[1]
 OUTDIR = REPO / "tmp" / "ex_lag_mult_compare"
 LOGDIR = OUTDIR / "logs"
-FIELDS = ("U", "Lag", "R", "member_forces", "constraint_residual")
+FIELDS = (
+    "U",
+    "Lag",
+    "R",
+    "member_forces",
+    "local_displacements",
+    "constraint_residual",
+)
 
 MATLAB_CLI = Path(r"C:\Program Files\MATLAB\R2025b\bin\matlab.exe")
 SCILAB_CLI = Path(r"C:\Program Files\scilab-2025.0.0\bin\WScilex-cli.exe")

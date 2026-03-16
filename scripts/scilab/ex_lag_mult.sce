@@ -75,10 +75,12 @@ U = solution(1:N);
 R = K([1 2 3 4], :) * U;
 
 member_forces = zeros(4, Nelem);
+local_displacements = zeros(4, Nelem);
 for e = 1:Nelem
     [k, T] = k_truss(A(e), E(e), L(e), alfa(e));
     ueg = U(Dvec(e, :));
     ue = T * ueg;
+    local_displacements(:, e) = ue;
     member_forces(:, e) = k * ue;
 end
 
@@ -92,6 +94,7 @@ if outdir <> "" then
     write_tsv(outdir + "/Lag.tsv", Lag);
     write_tsv(outdir + "/R.tsv", R);
     write_tsv(outdir + "/member_forces.tsv", member_forces);
+    write_tsv(outdir + "/local_displacements.tsv", local_displacements);
     write_tsv(outdir + "/constraint_residual.tsv", constraint_residual);
 else
     disp("U =");
@@ -100,6 +103,8 @@ else
     disp(Lag);
     disp("R =");
     disp(R);
+    disp("local_displacements =");
+    disp(local_displacements);
     disp("member_forces =");
     disp(member_forces);
 end
