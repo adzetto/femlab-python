@@ -2,6 +2,8 @@
 
 Python port of the legacy Scilab FemLab wrapper prepared by G. Turan at IYTE, itself derived from the original MATLAB FemLab teaching toolbox by O. Hededal and S. Krenk at Aalborg University.
 
+![Lagrange multiplier truss example](docs/assets/lagrange/ex_lag_mult_problem.png)
+
 ---
 
 ## Project Overview
@@ -314,6 +316,60 @@ for e in range(T.shape[0]):
     q, Se = qq4e(q, T[e], X, G, u)
 R = reaction(K, u, p)
 ```
+
+---
+
+## Lagrange Multiplier Truss Example
+
+The legacy `ex_lag_mult.sce` problem is now included as a documented four-solver benchmark. It models a three-bar truss with a fixed support at Node 1, an inclined constraint at Node 2,
+
+`-sin(60 deg) * u_x + cos(60 deg) * u_y = 0`,
+
+and a downward point load `P = -10` at Node 3.
+
+### Code and Figure
+
+| Artifact | Location |
+| --- | --- |
+| Legacy Scilab classroom example | [`examples/ex_lag_mult.sce`](examples/ex_lag_mult.sce) |
+| TikZ problem figure source | [`docs/assets/lagrange/ex_lag_mult_problem.tex`](docs/assets/lagrange/ex_lag_mult_problem.tex) |
+| Python adaptation | [`src/femlab/examples/ex_lag_mult.py`](src/femlab/examples/ex_lag_mult.py) |
+| Scilab comparison script | [`scripts/scilab/ex_lag_mult.sce`](scripts/scilab/ex_lag_mult.sce) |
+| MATLAB comparison script | [`scripts/matlab/ex_lag_mult.m`](scripts/matlab/ex_lag_mult.m) |
+| Julia comparison script | [`scripts/julia/ex_lag_mult.jl`](scripts/julia/ex_lag_mult.jl) |
+| Cross-language comparison runner | [`scripts/compare_ex_lag_mult.py`](scripts/compare_ex_lag_mult.py) |
+
+### Python Usage
+
+```python
+from femlab.examples import run_ex_lag_mult
+
+result = run_ex_lag_mult()
+print(result["U"].ravel())
+print(result["Lag"].ravel())
+print(result["R"].ravel())
+```
+
+### Shared Solution
+
+All four implementations converge to the same answer up to floating-point roundoff:
+
+- `U ~= [0, 0, -0.2803862765, -0.4856432765, 0.0739554173, -0.7981432765]^T`
+- `Lag ~= [-8.66025404, -5, -10]^T`
+- `R ~= [8.66025404, 5, -8.66025404, 5]^T`
+
+### Comparison
+
+Results below come from `python scripts/compare_ex_lag_mult.py`, which executed Python, Scilab, MATLAB, and Julia versions of the same problem and compared their outputs componentwise.
+
+| Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Python | 0.00067 | 0 | 0 | 0 | 0 |
+| Scilab | 3.38350 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 |
+| MATLAB | 4.54939 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 |
+| Julia | 1.65895 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 |
+
+The full machine-readable output is written to `tmp/ex_lag_mult_compare/summary.json`.
 
 ---
 
