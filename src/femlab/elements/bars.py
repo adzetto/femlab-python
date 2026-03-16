@@ -19,9 +19,9 @@ def kebar(Xe0, Xe1, Ge):
     props = as_float_array(Ge).reshape(-1)
 
     a0 = (initial[1] - initial[0]).reshape(-1, 1)
-    l0 = float(np.sqrt(a0.T @ a0))
+    l0 = float(np.linalg.norm(a0))
     a1 = (current[1] - current[0]).reshape(-1, 1)
-    l1 = float(np.sqrt(a1.T @ a1))
+    l1 = float(np.linalg.norm(a1))
 
     A = props[0]
     E = props[1] if props.size > 1 else 1.0
@@ -39,9 +39,9 @@ def qebar(Xe0, Xe1, Ge):
     props = as_float_array(Ge).reshape(-1)
 
     a0 = (initial[1] - initial[0]).reshape(-1, 1)
-    l0 = float(np.sqrt(a0.T @ a0))
+    l0 = float(np.linalg.norm(a0))
     a1 = (current[1] - current[0]).reshape(-1, 1)
-    l1 = float(np.sqrt(a1.T @ a1))
+    l1 = float(np.linalg.norm(a1))
 
     A = props[0]
     E = props[1] if props.size > 1 else 1.0

@@ -1,5 +1,5 @@
 from .assembly import assmk, assmq
-from .boundary import rnorm, setbc, solve_lag
+from .boundary import rnorm, setbc, solve_lag, solve_lag_general
 from .core import cols, init, rows
 from .elements import (
     kbar,
@@ -100,4 +100,5 @@ __all__ = [
     "setbc",
     "setload",
     "solve_lag",
+    "solve_lag_general",
 ]
