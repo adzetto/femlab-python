@@ -358,16 +358,49 @@ All four implementations converge to the same answer up to floating-point roundo
 - `Lag ~= [-8.66025404, -5, -10]^T`
 - `R ~= [8.66025404, 5, -8.66025404, 5]^T`
 
+### Solver Outputs
+
+Values below come from the current cross-language run. Near-zero values are shown as `0` for readability.
+
+#### Nodal Displacements
+
+| Solver | `u_1` | `u_2` | `u_3` | `u_4` | `u_5` | `u_6` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Python | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
+| Scilab | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
+| MATLAB | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
+| Julia | 0 | 0 | -0.280386275879 | -0.485643275567 | 0.073955417567 | -0.798143275567 |
+
+#### Local Axial Element Displacements
+
+Each pair lists the local axial displacement at the first and second node of the element.
+
+| Solver | Element 1 `(u_i', u_j')` | Element 2 `(u_i', u_j')` | Element 3 `(u_i', u_j')` |
+| --- | --- | --- | --- |
+| Python | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
+| Scilab | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
+| MATLAB | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
+| Julia | `(0, -0.472455591262)` | `(0.583388717613, 0.110933126351)` | `(0, -0.280386275879)` |
+
+#### Local Member Forces
+
+| Solver | Element 1 | Element 2 | Element 3 |
+| --- | ---: | ---: | ---: |
+| Python | 7.559289460185 | 7.559289460185 | 2.990786942706 |
+| Scilab | 7.559289460185 | 7.559289460185 | 2.990786942706 |
+| MATLAB | 7.559289460185 | 7.559289460185 | 2.990786942706 |
+| Julia | 7.559289460185 | 7.559289460185 | 2.990786942706 |
+
 ### Comparison
 
 Results below come from `python scripts/compare_ex_lag_mult.py`, which executed Python, Scilab, MATLAB, and Julia versions of the same problem and compared their outputs componentwise.
 
-| Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Python | 0.00067 | 0 | 0 | 0 | 0 |
-| Scilab | 3.38350 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 |
-| MATLAB | 4.54939 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 |
-| Julia | 1.65895 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 |
+| Solver | Runtime (s) | max \|Delta U\| vs Python | max \|Delta Lag\| vs Python | max \|Delta R\| vs Python | max \|Delta member force\| vs Python | max \|Delta local disp.\| vs Python |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Python | 0.00392 | 0 | 0 | 0 | 0 | 0 |
+| Scilab | 3.91070 | 2.22e-16 | 1.78e-15 | 1.78e-15 | 8.88e-16 | 3.33e-16 |
+| MATLAB | 7.61652 | 6.11e-16 | 8.88e-15 | 8.88e-15 | 5.77e-15 | 7.77e-16 |
+| Julia | 2.28636 | 5.00e-16 | 5.33e-15 | 5.33e-15 | 3.55e-15 | 5.00e-16 |
 
 The full machine-readable output is written to `tmp/ex_lag_mult_compare/summary.json`.
 

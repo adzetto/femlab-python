@@ -57,10 +57,12 @@ U = solution(1:N);
 R = K(1:4, :) * U;
 
 member_forces = zeros(4, Nelem);
+local_displacements = zeros(4, Nelem);
 for e = 1:Nelem
     [k, T] = k_truss(A(e), E(e), L(e), alpha(e));
     ueg = U(Dvec(e, :));
     ue = T * ueg;
+    local_displacements(:, e) = ue;
     member_forces(:, e) = k * ue;
 end
 
@@ -70,6 +72,7 @@ result = struct( ...
     "U", U, ...
     "Lag", Lag, ...
     "R", R, ...
+    "local_displacements", local_displacements, ...
     "member_forces", member_forces, ...
     "constraint_residual", constraint_residual ...
 );
@@ -82,6 +85,7 @@ if strlength(output_dir) > 0
     write_tsv(fullfile(output_dir, "Lag.tsv"), Lag);
     write_tsv(fullfile(output_dir, "R.tsv"), R);
     write_tsv(fullfile(output_dir, "member_forces.tsv"), member_forces);
+    write_tsv(fullfile(output_dir, "local_displacements.tsv"), local_displacements);
     write_tsv(fullfile(output_dir, "constraint_residual.tsv"), constraint_residual);
 elseif nargout == 0
     disp(result);
