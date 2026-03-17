@@ -87,7 +87,7 @@ graph LR
     end
     subgraph This Repo
         P[Python Package<br/>src/femlab/]
-        L[Legacy Scilab<br/>macros/ + examples/]
+        L[Legacy Scilab<br/>legacy/scilab/]
         T[Cross-Solver<br/>Test Pipeline]
     end
     M -- "ported to" --> S
@@ -102,7 +102,7 @@ This repository preserves three layers of the project:
 | Layer | Location | Status |
 | --- | --- | --- |
 | Original MATLAB toolbox | External reference | Baseline for parity checks |
-| Scilab wrapper | `macros/`, `examples/` | Preserved for reference |
+| Scilab wrapper | `legacy/scilab/macros/`, `legacy/scilab/examples/` | Preserved for reference |
 | **Python implementation** | `src/femlab/` | Tested |
 
 ---
@@ -402,7 +402,7 @@ and a downward point load `P = -10` at Node 3.
 
 | Artifact | Location |
 | --- | --- |
-| Legacy Scilab classroom example | [`examples/ex_lag_mult.sce`](examples/ex_lag_mult.sce) |
+| Legacy Scilab classroom example | [`legacy/scilab/examples/ex_lag_mult.sce`](legacy/scilab/examples/ex_lag_mult.sce) |
 | TikZ problem figure source | [`docs/assets/lagrange/ex_lag_mult_problem.tex`](docs/assets/lagrange/ex_lag_mult_problem.tex) |
 | Python adaptation | [`src/femlab/examples/ex_lag_mult.py`](src/femlab/examples/ex_lag_mult.py) |
 | Scilab comparison script | [`scripts/scilab/ex_lag_mult.sce`](scripts/scilab/ex_lag_mult.sce) |
@@ -616,7 +616,7 @@ xychart-beta
 
 | Displacement diff vs MATLAB | Stress diff vs MATLAB | Runtime comparison |
 | --- | --- | --- |
-| ![u diff](_solver_comparasion/plots/u_diff_vs_baseline.png) | ![S diff](_solver_comparasion/plots/stress_diff_vs_baseline.png) | ![Runtime](_solver_comparasion/plots/runtime_by_solver.png) |
+| ![u diff](benchmarks/plots/u_diff_vs_baseline.png) | ![S diff](benchmarks/plots/stress_diff_vs_baseline.png) | ![Runtime](benchmarks/plots/runtime_by_solver.png) |
 
 ---
 
@@ -864,13 +864,15 @@ The 14 remaining mypy findings are all in the Gmsh file parser (`io/gmsh.py`) an
 
 ## Legacy Scilab Structure
 
+All legacy files have been moved under `legacy/` — see [`legacy/README.md`](legacy/README.md) for details.
+
 | Path | Role |
 | --- | --- |
-| `macros/` | ~60 `.sci` files: assembly, elements, loads, BCs, stress, plotting |
-| `examples/` | Hand-authored teaching examples |
-| `mesh/` | Gmsh `.geo`/`.msh` assets |
-| `help/` | HTML reference pages for legacy API |
-| `doc/` | Inherited manual from MATLAB toolbox |
+| `legacy/scilab/macros/` | ~60 `.sci` files: assembly, elements, loads, BCs, stress, plotting |
+| `legacy/scilab/examples/` | Hand-authored teaching examples |
+| `legacy/scilab/help/` | HTML reference pages for legacy API |
+| `legacy/mesh/` | Gmsh `.geo`/`.msh` assets |
+| `legacy/doc/` | Inherited manual (PostScript) and original README |
 
 Editable targets documented in [docs/EDITABLE_TARGETS.md](docs/EDITABLE_TARGETS.md).
 
