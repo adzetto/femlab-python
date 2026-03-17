@@ -1,10 +1,11 @@
 #=
-CE 512 HW3 - Large-Scale Rayleigh-Ritz: n x n System Scaling
-Multi-threaded BLAS (all CPU cores) for dense assembly + solve.
-n up to 10000 to demonstrate:
-  1. O(n^2) assembly, O(n^3) solve scaling
-  2. Exponential condition-number growth (Hilbert-like K)
-  3. Float64 breakdown around n ~ 20-25
+CE 512 HW3 — Large-Scale Rayleigh–Ritz: n×n System Scaling
+(fully vectorized + CUDA GPU offloading)
+
+Assembly, solve, and evaluation are **loop-free**.
+• K assembled via outer-product broadcasting: K = iv*iv' ./ (iv.+iv'.-1)
+• u(x) evaluated as a matrix–vector product  V*c  (Vandermonde approach)
+• GPU offloading via CUDA.jl for n ≥ 256
 
 Outputs data_scaling.dat for pgfplots.
 Normalized: P=1, EA=1, L=1.
@@ -12,88 +13,60 @@ Normalized: P=1, EA=1, L=1.
 
 using LinearAlgebra, Printf
 
-# Use all available BLAS threads
+# ── Try to load CUDA ──────────────────────────────────────────────────────────
+const HAS_CUDA = try
+    @eval using CUDA
+    CUDA.functional()
+catch
+    false
+end
+HAS_CUDA && println("CUDA available — GPU offloading enabled")
+
+# Use all available BLAS threads on CPU
 nt = Sys.CPU_THREADS
 BLAS.set_num_threads(nt)
 println("BLAS threads: $nt")
 
 const OUTDIR = @__DIR__
 
-# --- Exact solution (normalized) ---
-u_exact(x) = x <= 0.5 ? 2x : 0.5 + x
+# ── Exact solution (vectorized) ───────────────────────────────────────────────
+u_exact_vec(xs) = ifelse.(xs .<= 0.5, 2.0 .* xs, 0.5 .+ xs)
+σ_exact_vec(xs) = ifelse.(xs .< 0.5, 2.0, ifelse.(xs .> 0.5, 1.0, 1.5))
 
-# --- In-place assembly of K and F ---
-function assemble!(K, F, n)
-    @inbounds for b in 1:n
-        j = b + 1
-        for a in 1:n
-            i = a + 1
-            K[a, b] = (i * j) / (i + j - 1)
+# ── Vectorized assembly (no loops) ───────────────────────────────────────────
+"""
+    assemble_vec(n) → (K, F)    [CPU arrays]
+
+Build K and F using pure broadcasting — zero explicit loops.
+"""
+function assemble_vec(n::Int)
+    iv = Float64.(2:n+1)                          # [2, 3, …, n+1]
+    K  = (iv * iv') ./ (iv .+ iv' .- 1.0)         # outer product + broadcast
+    F  = (1.0 ./ (2.0 .^ iv)) .+ 1.0              # broadcast
+    return K, F
+end
+
+# ── Vectorized solve (CPU or GPU) ─────────────────────────────────────────────
+"""
+    solve_system(K, F, n) → (c, t_solve)
+
+Solve Kc = F.  Offloads to GPU when CUDA is available and n ≥ 256.
+Returns coefficient vector on CPU.
+"""
+function solve_system(K::Matrix{Float64}, F::Vector{Float64}, n::Int)
+    if HAS_CUDA && n >= 256
+        # GPU path
+        t = @elapsed begin
+            Kd = CuArray(K)
+            Fd = CuArray(F)
+            cd = Kd \ Fd
+            c  = Array(cd)
         end
-        F[b] = 1.0 / 2.0^(b + 1) + 1.0
-    end
-end
-
-# --- Evaluate u(x) from coefficients ---
-function eval_u(x, n, c)
-    u = 0.0
-    xp = x * x  # start at x^2
-    @inbounds for a in 1:n
-        u += c[a] * xp
-        xp *= x
-    end
-    return u
-end
-
-# --- Evaluate sigma(x) = du/dx from coefficients ---
-function eval_sigma(x, n, c)
-    s = 0.0
-    xp = x  # start at x^1 for d/dx(x^2)=2x
-    @inbounds for a in 1:n
-        k = a + 1
-        s += c[a] * k * xp
-        xp *= x
-    end
-    return s
-end
-
-# ===================== CONFIGURATION =====================
-n_vals = [1, 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 40, 50,
-          75, 100, 150, 200, 300, 500, 750, 1000,
-          1500, 2000, 3000, 5000, 7500, 10000]
-
-# Limits for expensive computations
-const COND_MAX_N  = 2000   # cond() via SVD up to this n
-const ERROR_MAX_N = 500    # L2 error via quadrature up to this n
-
-# ===================== MAIN LOOP =====================
-println("=" ^ 70)
-println("CE 512 HW3 - Large-Scale Rayleigh-Ritz Scaling Study")
-println("=" ^ 70)
-println()
-
-open(joinpath(OUTDIR, "data_scaling.dat"), "w") do io
-    println(io, "n\tasm_s\tsolve_s\tcond_K\tresid\tu_tip\tu_tip_err\tu_L2\tsigma_L2")
-
-    for n in n_vals
-        @printf("n = %5d ... ", n)
-
-        K = Matrix{Float64}(undef, n, n)
-        F = Vector{Float64}(undef, n)
-
-        # --- Assembly ---
-        t_asm = @elapsed assemble!(K, F, n)
-
-        # --- Condition number ---
-        if n <= COND_MAX_N
-            kn = cond(Symmetric(K))
-        else
-            kn = NaN
-        end
-
-        # --- Solve (Cholesky for SPD, fallback to LU) ---
+        return c, t
+    else
+        # CPU path — Cholesky (SPD) → fallback LU → fallback NaN
         local c
-        t_solve = @elapsed begin
+        t = @elapsed begin
             try
                 c = cholesky(Symmetric(K)) \ F
             catch
@@ -104,29 +77,93 @@ open(joinpath(OUTDIR, "data_scaling.dat"), "w") do io
                 end
             end
         end
+        return c, t
+    end
+end
 
-        # --- Relative residual ---
-        resid = norm(K * c - F) / norm(F)
+# ── Vectorized evaluation (Vandermonde, no loops) ─────────────────────────────
+"""
+    eval_u_vec(xs, n, c) → u_vec
 
-        # --- Tip displacement ---
-        u_tip = eval_u(1.0, n, c)
+Evaluate u(x) = Σ c[a]·x^(a+1) at all points using a matrix–vector product.
+"""
+function eval_u_vec(xs::AbstractVector{Float64}, n::Int, c::Vector{Float64})
+    ks   = Float64.(2:n+1)'                        # (1, n) row vector
+    logx = log.(max.(xs, 1e-300))                   # (npts,) — safe log
+    V    = exp.(logx .* ks)                         # (npts, n) Vandermonde-like
+    return V * c                                    # matrix–vector, no loop
+end
+
+"""
+    eval_sigma_vec(xs, n, c) → σ_vec
+
+Evaluate σ(x) = du/dx = Σ c[a]·k·x^(k-1) at all points.
+"""
+function eval_sigma_vec(xs::AbstractVector{Float64}, n::Int, c::Vector{Float64})
+    ks   = Float64.(2:n+1)'
+    logx = log.(max.(xs, 1e-300))
+    W    = ks .* exp.(logx .* (ks .- 1.0))          # derivative Vandermonde
+    return W * c
+end
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+n_vals = [1, 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 40, 50,
+          75, 100, 150, 200, 300, 500, 750, 1000,
+          1500, 2000, 3000, 5000, 7500, 10000]
+
+const COND_MAX_N  = 2000   # cond() via SVD up to this n
+const ERROR_MAX_N = 500    # L2 error via quadrature up to this n
+
+# Quadrature grid — allocated once
+x_quad = collect(range(0.0, 1.0, length=2000))
+dx_q   = x_quad[2] - x_quad[1]
+ue_q   = u_exact_vec(x_quad)
+se_q   = σ_exact_vec(x_quad)
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  MAIN LOOP
+# ══════════════════════════════════════════════════════════════════════════════
+println("=" ^ 70)
+println("CE 512 HW3 — Large-Scale Rayleigh–Ritz Scaling (vectorized, $(HAS_CUDA ? "GPU" : "CPU"))")
+println("=" ^ 70)
+println()
+
+open(joinpath(OUTDIR, "data_scaling.dat"), "w") do io
+    println(io, "n\tasm_s\tsolve_s\tcond_K\tresid\tu_tip\tu_tip_err\tu_L2\tsigma_L2")
+
+    for n in n_vals
+        @printf("n = %5d ... ", n)
+
+        # ── Assembly (vectorized, timed) ──
+        local K, F
+        t_asm = @elapsed begin
+            K, F = assemble_vec(n)
+        end
+
+        # ── Condition number ──
+        kn = n <= COND_MAX_N ? cond(Symmetric(K)) : NaN
+
+        # ── Solve ──
+        c, t_solve = solve_system(K, F, n)
+
+        # ── Residual (vectorized) ──
+        resid = norm(K * c .- F) / norm(F)
+
+        # ── Tip displacement u(1) = sum(c) since 1^k = 1 ──
+        u_tip   = sum(c)                              # no eval needed at x=1
         tip_err = abs(u_tip - 1.5) / 1.5 * 100
 
-        # --- L2 errors (only for moderate n where evaluation is stable) ---
+        # ── L2 errors (vectorized, no inner loop) ──
         if n <= ERROR_MAX_N && isfinite(u_tip) && abs(u_tip) < 1e10
-            x_q = range(0, 1, length=2000)
-            dx = x_q[2] - x_q[1]
-            du2 = 0.0; ds2 = 0.0
-            for x in x_q
-                ue = u_exact(x)
-                se = x < 0.5 ? 2.0 : (x > 0.5 ? 1.0 : 1.5)
-                ur = eval_u(x, n, c)
-                sr = eval_sigma(x, n, c)
-                du2 += (ur - ue)^2 * dx
-                ds2 += (sr - se)^2 * dx
-            end
-            u_l2 = sqrt(abs(du2))
-            s_l2 = sqrt(abs(ds2))
+            ur = eval_u_vec(x_quad, n, c)
+            sr = eval_sigma_vec(x_quad, n, c)
+
+            du   = abs.(ur .- ue_q)
+            ds   = abs.(sr .- se_q)
+            u_l2 = sqrt(sum(du .^ 2) * dx_q)
+            s_l2 = sqrt(sum(ds .^ 2) * dx_q)
         else
             u_l2 = NaN
             s_l2 = NaN
