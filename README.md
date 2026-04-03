@@ -56,6 +56,52 @@ python -m femlabpy --version
 python -c "import femlabpy; print(femlabpy.__version__)"
 ```
 
+## Usage Flowchart
+
+**Step 1: Install the package.**
+```bash
+pip install femlabpy
+```
+
+**Step 2: Import the library.**
+```python
+import femlabpy as fp
+```
+
+**Step 3: Load problem data.**
+```python
+data = fp.canti()  # cantilever beam
+```
+
+**Step 4: Run the solver.**
+```python
+result = fp.elastic(data["T"], data["X"], data["G"], data["C"], data["P"], dof=2)
+```
+
+**Step 5: Access results.**
+```python
+print(result["u"])  # displacements
+print(result["S"])  # stresses
+```
+
+**For mesh import:**
+```python
+mesh = fp.load_gmsh2("your_mesh.msh")
+```
+
+**For nonlinear problems:**
+```python
+result = fp.nlbar(T, X, G, C, P, no_loadsteps=20, i_max=50)
+```
+
+**For plasticity:**
+```python
+result = fp.plastps(...)  # plane stress
+result = fp.plastpe(...)  # plane strain
+```
+
+---
+
 ## Quick Start
 
 ### Packaged cantilever benchmark
@@ -394,3 +440,15 @@ This repository is meant to stay usable as both a teaching codebase and a publis
 - Packaging and redistribution terms: [LICENSE](LICENSE)
 
 Legacy MATLAB / Scilab source material is preserved for historical and compatibility purposes inside `legacy/`.
+
+## References
+
+1. **Bathe, K.J.** (2014). *Finite Element Procedures*, 2nd edition. Prentice Hall.
+2. **Zienkiewicz, O.C., Taylor, R.L., & Zhu, J.Z.** (2013). *The Finite Element Method: Its Basis and Fundamentals*, 7th edition. Elsevier.
+3. **Hughes, T.J.R.** (2000). *The Finite Element Method: Linear Static and Dynamic Finite Element Analysis*. Dover Publications.
+4. **Cook, R.D., Malkus, D.S., Plesha, M.E., & Witt, R.J.** (2002). *Concepts and Applications of Finite Element Analysis*, 4th edition. Wiley.
+5. **de Souza Neto, E.A., Perić, D., & Owen, D.R.J.** (2008). *Computational Methods for Plasticity: Theory and Applications*. Wiley.
+6. **Simo, J.C., & Hughes, T.J.R.** (1998). *Computational Inelasticity*. Springer.
+7. **Gmsh** — A three-dimensional finite element mesh generator with built-in CAD and visualization: <https://gmsh.info/>
+8. **FemLab MATLAB Toolbox** — Original CE 512 classroom material.
+9. **FemLab Scilab Package** — Scilab port with direct elimination boundary conditions.
