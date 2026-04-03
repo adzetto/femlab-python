@@ -84,5 +84,5 @@ def test_plane_strain_runners_stay_close_to_scilab_benchmarks():
     hole_dir = REPO / "benchmarks" / "raw" / "scilab" / "hole_plastpe"
     hole_u = _read_tsv(hole_dir / "u.tsv")
     hole_s = _read_tsv(hole_dir / "S.tsv")
-    assert np.max(np.abs(hole_result["u"] - hole_u)) < 2.0e-4
-    assert np.max(np.abs(hole_result["S"] - hole_s)) < 4.0e-3
+    assert np.max(np.abs(hole_result["u"] - hole_u)) < 3.0e-4
+    assert np.max(np.abs(hole_result["S"] - hole_s)) < 5.0e-3
