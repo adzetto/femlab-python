@@ -24,3 +24,5 @@ Thumbs.db
 *.synctex.gz
 *.bbl
 *.blg
+docs/_build/
+docs/generated/
