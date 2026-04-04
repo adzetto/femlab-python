@@ -354,13 +354,41 @@ Data loaders: `cantilever_data()`, `flow_data()`, `bar01_data()`, `bar02_data()`
 
 </details>
 
+<details>
+<summary><strong>Dynamic Analysis</strong></summary>
+
+| Function | Description |
+| --- | --- |
+| `solve_newmark(M, C, K, p_func, u0, v0, dt, nsteps, ...)` | Solve time history using implicit Newmark-beta method. Returns `TimeHistory` object. |
+| `solve_central_diff(M_lump, C, K, p_func, u0, v0, dt, ...)` | Solve time history using explicit central difference method. Requires lumped mass. |
+| `solve_hht(M, C, K, p_func, u0, v0, dt, nsteps, ...)` | Solve time history using HHT-alpha method for high-frequency numerical damping. |
+| `solve_modal(K, M, n_modes, C_bc, dof)` | Compute natural frequencies and mode shapes. Returns `ModalResult` object. |
+| `seismic_load(M, direction, accel_record, dt_record)` | Create an effective seismic load function $p(t) = -M a_g(t)$ from ground acceleration. |
+| `compute_frf(M, C, K, input_dof, output_dof, freq_range)` | Compute Frequency Response Function (FRF) for harmonic excitation. |
+| `rayleigh_damping(M, K, f1, f2, zeta1, zeta2)` | Compute Rayleigh damping matrix $C = \alpha M + \beta K$ from two modal frequencies. |
+| `plot_time_history(result, dof_index)` | Plot displacement/velocity/acceleration vs time. |
+| `plot_modes(X, result, scale)` | Plot deformed mode shapes. |
+
+</details>
+
+<details>
+<summary><strong>Periodic Boundaries</strong></summary>
+
+| Function | Description |
+| --- | --- |
+| `find_periodic_pairs(X, n1_nodes, n2_nodes, tol)` | Find matching node pairs on opposite boundaries for periodic conditions. |
+| `periodic_constraints(pairs, dof)` | Generate linear constraint equations (G matrix) for periodic boundary conditions. |
+| `homogenize(T, X, G, pairs, dof)` | Compute the 3x3 effective homogenized stiffness tensor (C_eff) for a unit cell. |
+
+</details>
+
 ## Dynamic Analysis & Benchmarks
 
-`femlabpy` includes comprehensive structural dynamics solvers (Newmark-$\beta$, HHT-$\alpha$, Central Difference) and has been rigorously benchmarked against industry-standard open-source codes like **OpenSeesPy** and **CalculiX**.
+Dynamic analysis examples and benchmarks against OpenSeesPy and CalculiX.
 
 ### 1. Static and Modal Analysis (Cantilever Beam)
 
-A 2D plane-stress cantilever beam ($4m \times 0.5m$, $32 \times 4$ Q4 elements) was tested for static tip deflection under a point load and free-vibration natural frequencies.
+2D plane-stress cantilever beam (32x4 Q4 elements). Tested for static tip deflection and natural frequencies.
 
 | Metric | Analytical (E-B) | OpenSeesPy | CalculiX (CPS4) | femlabpy (Q4) | femlabpy vs OpenSees |
 |---|---|---|---|---|---|
@@ -369,18 +397,18 @@ A 2D plane-stress cantilever beam ($4m \times 0.5m$, $32 \times 4$ Q4 elements) 
 | **Frequency: Mode 2** | 163.628 Hz | 153.716 Hz | 154.668 Hz | **154.437 Hz** | **0.47%** |
 | **Frequency: Mode 3** | 458.163 Hz | 323.810 Hz | 323.892 Hz | **323.881 Hz** | **0.02%** |
 
-*Note: Differences against the Euler-Bernoulli analytical solution are expected, as 2D plane-stress elements capture shear deformations and Poisson effects that simple 1D beam theory ignores.*
+*Note: Small differences against 1D Euler-Bernoulli theory are expected for 2D plane-stress elements.*
 
 ### 2. Seismic Time History Analysis
 
-A 2D plane-stress concrete column ($8m \times 1m$, $4 \times 32$ Q4 elements) was subjected to the **Düzce Earthquake** horizontal ground motion record (`BOL090.AT2`, PGA = 0.82g). The analysis ran for 55.9 seconds (5590 time steps at $\Delta t = 0.01s$) using the unconditionally stable Newmark average acceleration method with 5% Rayleigh damping.
+2D concrete column (4x32 Q4 elements) under horizontal earthquake (Düzce, BOL090.AT2, PGA = 0.82g). Solved with Newmark-beta average acceleration and 5% Rayleigh damping for 5590 steps (dt = 0.01s).
 
 | Metric | OpenSeesPy (UniformExcitation) | CalculiX (*DLOAD GRAV) | femlabpy (seismic_load) |
 |---|---|---|---|
 | **Max Roof Disp. (X)** | 5.850 mm | 4.180 mm | **5.848 mm** |
 | **Solve Time** | 1.33 seconds | 141.37 seconds | **1.12 seconds** |
 
-**Conclusion:** The time-history displacement trace of `femlabpy` almost perfectly overlaps with the compiled C++ OpenSees integrator over thousands of cycles (**0.67% RMS difference** over 5590 steps). The `femlabpy` solver also completed the analysis significantly faster than CalculiX and slightly faster than OpenSeesPy.
+**Conclusion:** femlabpy matches OpenSeesPy with a 0.67% RMS difference over 5590 steps. femlabpy solve time is 1.12 seconds.
 
 ## Development
 
