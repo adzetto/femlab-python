@@ -494,6 +494,13 @@ def load_gmsh2(filename, which=None) -> GmshMesh:
     -------
     GmshMesh
         Normalized mesh object with optional explicit topology tables.
+
+    Algorithm
+    ---------
+    1. Parse the MSH file header to determine version (2.2 vs 4.1).
+    2. Extract $N \times 3$ nodal coordinates, $\mathbf{X} \in \mathbb{R}^{N \times 3}$.
+    3. Map Physical Groups to element properties using $\mathcal{M}: \mathbb{Z}^+ \to \mathcal{P}$.
+    4. Return a `GmshMesh` dataclass containing the tessellation $\mathcal{T}$.
     """
     positions, bounds_min, bounds_max, _, elements = _parse_gmsh_file(filename)
     if which is None:

@@ -28,6 +28,21 @@ def solve_lag_general(
 
     The augmented system is scaled to keep the constraint rows numerically
     compatible with the stiffness matrix, matching the legacy toolbox pattern.
+
+    Algorithm
+    ---------
+    1. Define the scaling factor $\alpha = 10^{-2} \times \max_i |K_{ii}|$.
+    2. Form the scaled constraint matrix $\bar{\mathbf{G}} = \alpha \mathbf{G}$ and right-hand side $\bar{\mathbf{Q}} = \alpha \mathbf{Q}$.
+    3. Assemble the augmented matrix:
+       $$
+       \bar{\mathbf{K}} = \begin{bmatrix} \mathbf{K} & \bar{\mathbf{G}}^T \\ \bar{\mathbf{G}} & \mathbf{0} \end{bmatrix}
+       $$
+    4. Assemble the augmented right-hand side:
+       $$
+       \bar{\mathbf{p}} = \begin{bmatrix} \mathbf{p} \\ \bar{\mathbf{Q}} \end{bmatrix}
+       $$
+    5. Solve the augmented system $\bar{\mathbf{K}} \mathbf{x} = \bar{\mathbf{p}}$ to obtain the solution $\mathbf{u}$ and scaled Lagrange multipliers $\bar{\boldsymbol{\lambda}}$.
+    6. If requested, recover the physical multipliers $\boldsymbol{\lambda} = \alpha \bar{\boldsymbol{\lambda}}$.
     """
 
     constraint_matrix = as_float_array(G)
@@ -111,6 +126,15 @@ def setbc(K, p, C, dof: int = 1):
     ``ks = 0.1 * max(diag(K))``), with the additional correction that
     coupling forces are transferred to the RHS *before* zeroing, so
     non-zero prescribed displacements are handled correctly.
+
+    Algorithm
+    ---------
+    1. Calculate a penalty stiffness $k_s = 0.1 \times \max_i |K_{ii}|$.
+    2. For each constraint $j$ with prescribed value $d$:
+       a. Transfer coupling forces to the RHS: $p_i \leftarrow p_i - K_{ij} d$ for $i \neq j$.
+       b. Zero out the corresponding row and column: $K_{ij} = 0$ and $K_{ji} = 0$ for all $i$.
+       c. Place the penalty stiffness on the diagonal: $K_{jj} = k_s$.
+       d. Set the corresponding load entry: $p_j = k_s d$.
 
     Parameters
     ----------
@@ -213,6 +237,16 @@ def solve_lag(K, p, C=None, dof: int = 1, *, return_lagrange: bool = False):
     return_lagrange:
         When ``True``, also return the recovered Lagrange multipliers.
 
+    Algorithm
+    ---------
+    1. Map the nodal constraints given in $\mathbf{C}$ to global degree of freedom indices $j$.
+    2. Construct the Boolean constraint matrix $\mathbf{G}$ where $G_{ij} = 1$ if constraint $i$ acts on DOF $j$, and $0$ otherwise.
+    3. Extract the constraint values into the vector $\mathbf{Q}$.
+    4. Delegate the solution to the general augmented Lagrangian solver to compute $\mathbf{u}$ and $\boldsymbol{\lambda}$ satisfying:
+       $$
+       \begin{bmatrix} \mathbf{K} & \mathbf{G}^T \\ \mathbf{G} & \mathbf{0} \end{bmatrix} \begin{bmatrix} \mathbf{u} \\ \boldsymbol{\lambda} \end{bmatrix} = \begin{bmatrix} \mathbf{p} \\ \mathbf{Q} \end{bmatrix}
+       $$
+
     Returns
     -------
     ndarray or tuple[ndarray, ndarray]
@@ -261,6 +295,15 @@ def rnorm(f, C, dof: int):
         Legacy constraint table ``[node, local_dof, value]``.
     dof:
         Degrees of freedom per node.
+
+    Algorithm
+    ---------
+    1. Map the constrained nodal degrees of freedom in $\mathbf{C}$ to global indices $I_c$.
+    2. Identify the unconstrained index set $I_u = \{1, 2, \ldots, N\} \setminus I_c$.
+    3. Compute the Euclidean norm over the unconstrained components:
+       $$
+       \|\mathbf{f}_{I_u}\|_2 = \sqrt{\sum_{i \in I_u} f_i^2}
+       $$
 
     Returns
     -------

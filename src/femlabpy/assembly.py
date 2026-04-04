@@ -24,6 +24,11 @@ def assmk(K, Ke, Te, dof: int = 1):
     -------
     ndarray or sparse matrix
         Updated global stiffness matrix.
+
+    Algorithm
+    ---------
+    1. Compute the global DOF indices $I_e$ from the element topology $T_e$.
+    2. Add the local stiffness matrix $K_e$ to the global stiffness matrix $K$ using index slicing $K[I_e, I_e] \mathrel{+}= K_e$.
     """
     element_nodes = topology_nodes(Te)
     indices = node_dof_indices(element_nodes, dof)
@@ -54,6 +59,12 @@ def assmq(q, qe, Te, dof: int = 1):
     -------
     ndarray
         Updated global internal-force vector.
+
+    Algorithm
+    ---------
+    1. Compute the global DOF indices $I_e$ from the element topology $T_e$.
+    2. Reshape the element internal-force vector $q_e$ to a column vector.
+    3. Add the element internal-force vector $q_e$ to the global internal-force vector $q$ using index slicing $q[I_e, 0] \mathrel{+}= q_e$.
     """
     element_nodes = topology_nodes(Te)
     indices = node_dof_indices(element_nodes, dof)

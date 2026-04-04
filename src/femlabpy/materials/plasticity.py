@@ -7,8 +7,20 @@ from .invariants import devstress, eqstress
 
 
 def yieldvm(S, G, dL, Sy):
-    """
+    r"""
     Evaluate the legacy von Mises consistency function.
+
+    Mathematical Formulation
+    ------------------------
+    Evaluates the plane-stress von Mises yield condition implicitly in terms of the plastic multiplier $\Delta\gamma$:
+    $f(\Delta\gamma) = \frac{(\sigma_{11} + \sigma_{22})^2}{\xi_1^2} + \frac{3(\sigma_{11} - \sigma_{22})^2}{\xi_2^2} + \frac{12\sigma_{12}^2}{\xi_2^2} - 1 = 0$
+    where $\xi_1 = 2S_y + \Delta\gamma E_1$ and $\xi_2 = 2S_y + \Delta\gamma E_2$.
+
+    Algorithm
+    ---------
+    1. Unpack stress and material parameters.
+    2. Compute effective moduli $E_1$ and $E_2$.
+    3. Evaluate the non-linear yield function residual $f(\Delta\gamma)$.
 
     Parameters
     ----------
@@ -44,8 +56,19 @@ def yieldvm(S, G, dL, Sy):
 
 
 def dyieldvm(S, G, dL, Sy):
-    """
+    r"""
     Differentiate :func:`yieldvm` with respect to the plastic multiplier.
+
+    Mathematical Formulation
+    ------------------------
+    Computes the derivative of the yield function residual with respect to the plastic multiplier:
+    $\frac{\partial f}{\partial \Delta\gamma} = \frac{-2E_1(\sigma_{11}+\sigma_{22})^2}{\xi_1^3} - \frac{2E_2(3(\sigma_{11}-\sigma_{22})^2 + 12\sigma_{12}^2)}{\xi_2^3}$
+
+    Algorithm
+    ---------
+    1. Unpack properties and compute intermediate terms.
+    2. Differentiate the yield function analytically.
+    3. Return the scalar derivative.
 
     Parameters
     ----------
@@ -77,8 +100,18 @@ def dyieldvm(S, G, dL, Sy):
 
 
 def stressvm(S, G, Sy):
-    """
+    r"""
     Perform the legacy plane-stress von Mises return mapping.
+
+    Mathematical Formulation
+    ------------------------
+    Radial Return mapping for J2 plasticity: $\sigma_{n+1} = s_{trial} (1 - \frac{3G \Delta \gamma}{q_{trial}}) + p I$.
+
+    Algorithm
+    ---------
+    1. Compute elastic trial stress.
+    2. Check yield condition.
+    3. Apply return mapping if plastic.
 
     Parameters
     ----------
@@ -120,8 +153,21 @@ def stressvm(S, G, Sy):
 
 
 def stressdp(S, G, Sy0, dE, dS):
-    """
+    r"""
     Perform a Drucker-Prager stress correction with Newton iterations.
+
+    Mathematical Formulation
+    ------------------------
+    Drucker-Prager yield criterion: $f(\sigma) = q + \phi p - S_y \le 0$.
+    The elastoplastic tangent and residual are formulated as:
+    $R = \Delta \varepsilon - C (\Delta \sigma) - \Delta\gamma \frac{\partial f}{\partial \sigma} = 0$.
+
+    Algorithm
+    ---------
+    1. Evaluate the Drucker-Prager yield function and its gradients.
+    2. Setup the full local Newton system for the state variables.
+    3. Iterate until the residual norms fall below tolerances.
+    4. Update the stress tensor and plastic multiplier.
 
     Parameters
     ----------

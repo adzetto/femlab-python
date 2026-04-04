@@ -17,7 +17,24 @@ except ImportError:  # pragma: no cover
 
 
 def kebar(Xe0, Xe1, Ge):
-    """Compute the tangent stiffness matrix of a geometrically nonlinear bar element."""
+    """Compute the tangent stiffness matrix of a geometrically nonlinear bar element.
+
+    Mathematical Formulation
+    ------------------------
+    The tangent stiffness matrix $K$ is the sum of the material stiffness matrix $K_m$ and the geometric stiffness matrix $K_g$:
+    $$K = K_m + K_g$$
+    where
+    $$K_m = \\frac{E A}{L_0^3} \\begin{bmatrix} a_1 a_1^T & -a_1 a_1^T \\\\ -a_1 a_1^T & a_1 a_1^T \\end{bmatrix}$$
+    $$K_g = \\frac{N}{L_0} \\begin{bmatrix} I & -I \\\\ -I & I \\end{bmatrix}$$
+    Here, $a_1$ is the current element vector, $L_0$ is the initial length, $A$ is the cross-sectional area, $E$ is the Young's modulus, and $N$ is the axial force.
+
+    Algorithm
+    ---------
+    1. Compute the initial length $L_0$ and current length $L_1$.
+    2. Compute the Green-Lagrange strain $\\epsilon = \\frac{L_1^2 - L_0^2}{2 L_0^2}$.
+    3. Compute the normal force $N = E A \\epsilon$.
+    4. Assemble and return the tangent stiffness matrix $K = K_m + K_g$.
+    """
     initial = as_float_array(Xe0)
     current = as_float_array(Xe1)
     props = as_float_array(Ge).reshape(-1)
@@ -38,7 +55,23 @@ def kebar(Xe0, Xe1, Ge):
 
 
 def qebar(Xe0, Xe1, Ge):
-    """Compute the internal-force response of a single geometrically nonlinear bar."""
+    """Compute the internal-force response of a single geometrically nonlinear bar.
+
+    Mathematical Formulation
+    ------------------------
+    The internal force vector $q$ for a bar element is derived from the variation of the strain energy. It can be expressed as:
+    $$q = \\frac{A \\sigma}{L_0} \\begin{bmatrix} -a_1 \\\\ a_1 \\end{bmatrix}$$
+    where $A$ is the cross-sectional area, $\\sigma$ is the normal stress, $L_0$ is the initial length, and $a_1$ is the current element vector.
+    The Green-Lagrange strain is given by $\\epsilon = \\frac{L_1^2 - L_0^2}{2 L_0^2}$ and the stress is $\\sigma = E \\epsilon$.
+
+    Algorithm
+    ---------
+    1. Compute the initial and current element vectors and lengths ($L_0$, $L_1$).
+    2. Compute the Green-Lagrange strain $\\epsilon$.
+    3. Compute the normal stress $\\sigma = E \\epsilon$.
+    4. Calculate the internal force vector $q$.
+    5. Return the internal force vector $q$, stress $\\sigma$, and strain $\\epsilon$.
+    """
     initial = as_float_array(Xe0)
     current = as_float_array(Xe1)
     props = as_float_array(Ge).reshape(-1)
@@ -57,7 +90,24 @@ def qebar(Xe0, Xe1, Ge):
 
 
 def kbar(K, T, X, G, u=None):
-    """Assemble bar or truss tangent stiffness contributions into the global matrix."""
+    """Assemble bar or truss tangent stiffness contributions into the global matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global tangent stiffness matrix $\\mathbf{K}$ is updated by assembling the contributions of each geometrically nonlinear bar element. For each element $e$, the stiffness matrix $K^{(e)}$ is:
+    $$K^{(e)} = \\frac{E A}{L_0^3} \\begin{bmatrix} a_1 a_1^T & -a_1 a_1^T \\\\ -a_1 a_1^T & a_1 a_1^T \\end{bmatrix} + \\frac{N}{L_0} \\begin{bmatrix} I & -I \\\\ -I & I \\end{bmatrix}$$
+    The global stiffness matrix is obtained by summing the element stiffness matrices using the connectivity matrix $\\mathbf{A}^{(e)}$:
+    $$\\mathbf{K} = \\sum_{e=1}^{N_{el}} (\\mathbf{A}^{(e)})^T K^{(e)} \\mathbf{A}^{(e)}$$
+
+    Algorithm
+    ---------
+    1. Determine the current nodal coordinates based on initial coordinates $X$ and displacements $u$.
+    2. Compute the initial and current lengths of all bar elements.
+    3. Calculate the strains and normal forces for all elements.
+    4. Construct the tangent stiffness matrices (material and geometric) for all elements in a vectorized manner.
+    5. Assemble the element matrices into the global stiffness matrix $K$ using sparse or dense operations.
+    6. Return the updated global matrix $K$.
+    """
     X = as_float_array(X)
     topology = as_float_array(T)
     if u is None:
@@ -102,7 +152,23 @@ def kbar(K, T, X, G, u=None):
 
 
 def qbar(q, T, X, G, u=None):
-    """Assemble bar or truss internal forces and element output quantities."""
+    """Assemble bar or truss internal forces and element output quantities.
+
+    Mathematical Formulation
+    ------------------------
+    The global internal force vector $\\mathbf{q}$ is updated by assembling the local internal force vectors $q^{(e)}$ of all elements. For each element $e$:
+    $$q^{(e)} = \\frac{A \\sigma}{L_0} \\begin{bmatrix} -a_1 \\\\ a_1 \\end{bmatrix}$$
+    The global internal forces are computed by:
+    $$\\mathbf{q} = \\sum_{e=1}^{N_{el}} (\\mathbf{A}^{(e)})^T q^{(e)}$$
+
+    Algorithm
+    ---------
+    1. Evaluate current coordinates from initial coordinates and displacements.
+    2. Compute initial lengths, current lengths, strains, and stresses for all elements.
+    3. Compute local internal force vectors for all elements.
+    4. Assemble the local internal force vectors into the global internal force vector $q$.
+    5. Return the updated global internal force vector $q$, and the arrays of stresses and strains.
+    """
     X = as_float_array(X)
     topology = as_float_array(T)
     if u is None:
@@ -138,6 +204,20 @@ def mebar(Xe, Ge, dof: int = 2, *, lumped: bool = False):
 
     Lumped mass:
         M = (rho * A * L / 2) * I_{2*dof}
+
+    Mathematical Formulation
+    ------------------------
+    The consistent mass matrix $M$ is derived using the shape functions $N_i$:
+    $$M = \\int_0^L \\rho A N^T N \\, dx = \\frac{\\rho A L}{6} \\begin{bmatrix} 2 & 1 \\\\ 1 & 2 \\end{bmatrix} \\otimes I_{dof}$$
+    The lumped mass matrix employs a diagonal representation, dividing the total mass $\\rho A L$ equally among the nodes:
+    $$M_{lumped} = \\frac{\\rho A L}{2} I_{2 \\cdot dof}$$
+
+    Algorithm
+    ---------
+    1. Extract the area $A$, density $\\rho$, and initial coordinates to find length $L$.
+    2. If a lumped mass matrix is requested, compute and return the diagonal matrix.
+    3. If a consistent mass matrix is requested, construct the block matrix using the standard formulation.
+    4. Return the element mass matrix $M$.
 
     Parameters
     ----------
@@ -176,6 +256,20 @@ def mebar(Xe, Ge, dof: int = 2, *, lumped: bool = False):
 def mbar(M, T, X, G, dof: int = 2, *, lumped: bool = False):
     """
     Assemble bar/truss mass matrices into the global mass matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global mass matrix $\\mathbf{M}$ is constructed by assembling the local mass matrices $M^{(e)}$ of all elements.
+    $$\\mathbf{M} = \\sum_{e=1}^{N_{el}} (\\mathbf{A}^{(e)})^T M^{(e)} \\mathbf{A}^{(e)}$$
+    Depending on the formulation, $M^{(e)}$ is either the consistent or lumped mass matrix.
+
+    Algorithm
+    ---------
+    1. Extract initial nodal coordinates and properties for all elements.
+    2. Compute the length $L$, area $A$, and density $\\rho$ for each element.
+    3. If lumped mass is specified, add half the total element mass to the diagonal entries of the corresponding global degrees of freedom.
+    4. If consistent mass is specified, construct the full element mass matrices and assemble them into the global mass matrix $M$.
+    5. Return the updated global mass matrix $M$.
 
     Parameters
     ----------

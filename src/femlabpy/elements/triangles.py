@@ -173,6 +173,17 @@ def ket3e(Xe, Ge):
         Element stiffness matrix.
         DOF ordering: [u1, v1, u2, v2, u3, v3]
 
+    Mathematical Formulation
+    ------------------------
+    The stiffness matrix for a constant strain triangle element is given by $K_e = A B^T D B$. The $B$ matrix is formed by derivatives of the area coordinates. The material matrix $D$ represents either plane stress or plane strain conditions.
+
+    Algorithm
+    ---------
+    1. Compute the area $A$ using the determinant of the Jacobian.
+    2. Form the shape function derivatives $dN$ and the strain-displacement matrix $B$.
+    3. Compute the constitutive matrix $D$.
+    4. Evaluate $K_e = A B^T D B$.
+
     Notes
     -----
     The CST element assumes constant strain throughout the element.
@@ -232,6 +243,17 @@ def qet3e(Xe, Ge, Ue):
     Ee : ndarray, shape (3,)
         Strain components [exx, eyy, gxy].
 
+    Mathematical Formulation
+    ------------------------
+    The internal forces are $q_e = A B^T \sigma_e$. The strain is $\epsilon_e = B u_e$ and the stress is $\sigma_e = D \epsilon_e$.
+
+    Algorithm
+    ---------
+    1. Compute the area $A$ and the strain-displacement matrix $B$.
+    2. Compute the constitutive matrix $D$.
+    3. Evaluate strains $\epsilon_e = B u_e$ and stresses $\sigma_e = D \epsilon_e$.
+    4. Compute internal forces $q_e = A B^T \sigma_e$.
+
     Examples
     --------
     >>> qe, stress, strain = qet3e(Xe, Ge, Ue)
@@ -285,6 +307,17 @@ def kt3e(K, T, X, G):
     -------
     K : ndarray or sparse matrix
         Updated global stiffness matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global stiffness matrix $K$ is formed by assembling element stiffness matrices $K_e = A_e B_e^T D_e B_e$ using the connectivity matrix.
+
+    Algorithm
+    ---------
+    1. Compute areas $A_e$ and matrices $B_e$ for all elements simultaneously using vectorized operations.
+    2. Determine plane strain conditions and compute constitutive matrices $D_e$ for all elements.
+    3. Compute element stiffness matrices $K_e = A_e B_e^T D_e B_e$.
+    4. Scatter the element matrices into the global sparse or dense matrix $K$.
 
     Notes
     -----
@@ -372,6 +405,17 @@ def qt3e(q, T, X, G, u):
     E : ndarray, shape (nel, 3)
         Strain at each element centroid: [exx, eyy, gxy].
 
+    Mathematical Formulation
+    ------------------------
+    The global internal force vector $q$ is assembled from element forces $q_e = A_e B_e^T \sigma_e$. Element strains are $\epsilon_e = B_e u_e$ and stresses are $\sigma_e = D_e \epsilon_e$.
+
+    Algorithm
+    ---------
+    1. Extract element displacements $u_e$ using the connectivity matrix.
+    2. Compute $A_e$, $B_e$, and $D_e$ for all elements.
+    3. Evaluate strains $\epsilon_e = B_e u_e$ and stresses $\sigma_e = D_e \epsilon_e$.
+    4. Compute element forces $q_e = A_e B_e^T \sigma_e$ and scatter them into $q$.
+
     Examples
     --------
     >>> q, stresses, strains = qt3e(q, T, X, G, u)
@@ -423,6 +467,17 @@ def ket3p(Xe, Ge):
     -------
     ndarray
         ``3 x 3`` element conductivity matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The conductivity matrix is $K_e = A B^T D B$, where $D = k I$ is the isotropic conductivity. The optional reaction term is $\frac{b A}{12} \begin{bmatrix} 2 & 1 & 1 \\ 1 & 2 & 1 \\ 1 & 1 & 2 \end{bmatrix}$.
+
+    Algorithm
+    ---------
+    1. Compute the triangle area $A$.
+    2. Construct the gradient operator $B$.
+    3. Compute the conductivity portion $A B^T D B$.
+    4. Add the reaction term if specified.
     """
     a, area = _triangle_geometry(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -455,6 +510,16 @@ def qet3p(Xe, Ge, Ue):
     -------
     tuple[ndarray, ndarray, ndarray]
         Element flux vector, flux components, and gradient components.
+
+    Mathematical Formulation
+    ------------------------
+    The flux vector is given by $q_e = A B^T \sigma_e$, where $\sigma_e = D \epsilon_e$ and $\epsilon_e = B u_e$. For scalar problems, $\epsilon_e$ is the potential gradient and $\sigma_e$ is the flux.
+
+    Algorithm
+    ---------
+    1. Compute the area $A$ and the gradient operator $B$.
+    2. Evaluate gradients $\epsilon_e = B u_e$ and fluxes $\sigma_e = D \epsilon_e$.
+    3. Compute the equivalent nodal fluxes $q_e = A B^T \sigma_e$.
     """
     a, area = _triangle_geometry(Xe)
     B = (1.0 / (2.0 * area)) * np.column_stack([-a[:, 1], a[:, 0]]).T
@@ -486,6 +551,16 @@ def kt3p(K, T, X, G):
     -------
     ndarray or sparse matrix
         Updated global conductivity matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global conductivity matrix $K$ is assembled from $K_e = A_e B_e^T D_e B_e$ plus optional reaction terms.
+
+    Algorithm
+    ---------
+    1. Vectorize the computation of areas $A_e$ and gradient operators $B_e$.
+    2. Compute the element matrices $K_e = A_e k_e B_e^T B_e$ and add reaction contributions.
+    3. Scatter the element matrices into the global conductivity matrix $K$.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -545,6 +620,17 @@ def qt3p(q, T, X, G, u):
     -------
     tuple[ndarray, ndarray, ndarray]
         Updated nodal flux vector, element fluxes, and element gradients.
+
+    Mathematical Formulation
+    ------------------------
+    The global flux vector $q$ is assembled from element fluxes $q_e = A_e B_e^T \sigma_e$. The gradients are $\epsilon_e = B_e u_e$ and fluxes $\sigma_e = k_e \epsilon_e$.
+
+    Algorithm
+    ---------
+    1. Extract element potentials $u_e$.
+    2. Compute $A_e$ and $B_e$ for all elements.
+    3. Evaluate gradients $\epsilon_e = B_e u_e$ and fluxes $\sigma_e = k_e \epsilon_e$.
+    4. Scatter the element vectors into the global vector $q$.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -588,6 +674,17 @@ def met3e(Xe, Ge, *, lumped: bool = False):
     Returns
     -------
     Me : ndarray, shape (6, 6)
+
+    Mathematical Formulation
+    ------------------------
+    The consistent mass matrix is $M_e = \frac{\rho t A}{12} \begin{bmatrix} 2 & 1 & 1 \\ 1 & 2 & 1 \\ 1 & 1 & 2 \end{bmatrix} \otimes I_2$. The lumped mass matrix is $M_e = \frac{\rho t A}{3} I_6$.
+
+    Algorithm
+    ---------
+    1. Compute the area $A$ of the triangle.
+    2. Determine density $\rho$ and thickness $t$.
+    3. Check the `lumped` flag.
+    4. Construct the corresponding mass matrix and return it.
     """
     _, area = _triangle_geometry(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -624,6 +721,17 @@ def mt3e(M, T, X, G, *, lumped: bool = False):
     -------
     M : ndarray or sparse
         Updated global mass matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global mass matrix $M$ is assembled from $M_e$. Consistent elements use the $\frac{\rho t A}{12}$ block while lumped elements sum $\frac{\rho t A}{3}$ onto the diagonal.
+
+    Algorithm
+    ---------
+    1. Vectorize the computation of areas $A_e$.
+    2. Determine $\rho$ and $t$ per element.
+    3. If lumped, scatter $\frac{\rho t A}{3}$ directly to the diagonal of $M$.
+    4. If consistent, compute element matrices and scatter into $M$.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)

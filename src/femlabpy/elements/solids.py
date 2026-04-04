@@ -150,6 +150,18 @@ def keT4e(Xe, Ge):
     -------
     ndarray
         ``12 x 12`` element stiffness matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The stiffness matrix for a T4 element uses an exact analytical volume integration.
+    $$ \mathbf{K}^e = \int_{\Omega^e} \mathbf{B}^T \mathbf{C} \mathbf{B} \, d\Omega $$
+
+    Algorithm
+    ---------
+    1. Extract nodal coordinates and calculate the Jacobian matrix.
+    2. Compute the shape function derivatives and the $6 \times 12$ $\mathbf{B}$ matrix.
+    3. Construct the $6 \times 6$ constitutive matrix $\mathbf{C}$.
+    4. Compute the element stiffness matrix $\mathbf{K}^e$.
     """
     Xe = as_float_array(Xe)
     dN = np.array(
@@ -180,6 +192,17 @@ def qeT4e(Xe, Ge, Ue):
     -------
     tuple[ndarray, ndarray, ndarray]
         Element internal-force vector, stress vector, and strain vector.
+
+    Mathematical Formulation
+    ------------------------
+    The strain vector is $\boldsymbol{\epsilon}^e = \mathbf{B} \mathbf{u}^e$, and the stress vector is $\boldsymbol{\sigma}^e = \mathbf{C} \boldsymbol{\epsilon}^e$.
+    The internal force is $\mathbf{q}^e = \int_{\Omega^e} \mathbf{B}^T \boldsymbol{\sigma}^e \, d\Omega$.
+
+    Algorithm
+    ---------
+    1. Compute the $\mathbf{B}$ matrix and the constitutive matrix $\mathbf{C}$.
+    2. Evaluate strain $\boldsymbol{\epsilon}^e$ and stress $\boldsymbol{\sigma}^e$.
+    3. Compute the element internal force vector $\mathbf{q}^e$.
     """
     Xe = as_float_array(Xe)
     Ue = as_float_array(Ue).reshape(-1, 1)
@@ -216,6 +239,19 @@ def kT4e(K, T, X, G):
     -------
     ndarray or sparse matrix
         Updated global stiffness matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global stiffness matrix is assembled from element matrices $\mathbf{K}^e$:
+    $$ \mathbf{K} = \mathbf{K} + \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{K}^e \mathbf{L}_e $$
+    where $\mathbf{L}_e$ is the Boolean connectivity matrix.
+
+    Algorithm
+    ---------
+    1. Loop over all elements or compute in a vectorized batch.
+    2. Compute element stiffness matrices using batched operations.
+    3. Determine global degrees of freedom indices for each element.
+    4. Scatter the element stiffness entries into the global stiffness matrix $\mathbf{K}$.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -275,6 +311,19 @@ def qT4e(q, T, X, G, u):
     -------
     tuple[ndarray, ndarray, ndarray]
         Updated internal-force vector, element stresses, and element strains.
+
+    Mathematical Formulation
+    ------------------------
+    The global internal force vector is assembled from element vectors $\mathbf{q}^e$:
+    $$ \mathbf{q} = \mathbf{q} + \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{q}^e $$
+    where strains and stresses are evaluated for each element individually.
+
+    Algorithm
+    ---------
+    1. Extract element displacements from the global displacement vector.
+    2. Compute batched $\mathbf{B}$ matrices and strains $\boldsymbol{\epsilon}^e$.
+    3. Compute batched stresses $\boldsymbol{\sigma}^e = \mathbf{C} \boldsymbol{\epsilon}^e$.
+    4. Scatter element internal forces into the global force vector $\mathbf{q}$.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -447,6 +496,18 @@ def keh8e(Xe, Ge):
     ndarray
         ``24 x 24`` element stiffness matrix integrated with ``2 x 2 x 2``
         Gauss quadrature.
+
+    Mathematical Formulation
+    ------------------------
+    The stiffness matrix for a H8 element uses $2 \times 2 \times 2$ Gauss-Legendre integration.
+    $$ \mathbf{K}^e = \int_{\Omega^e} \mathbf{B}^T \mathbf{C} \mathbf{B} \, d\Omega = \sum_{i=1}^8 \mathbf{B}_i^T \mathbf{C} \mathbf{B}_i \det(\mathbf{J}_i) W_i $$
+
+    Algorithm
+    ---------
+    1. Loop over 8 Gauss points.
+    2. Compute the $3 \times 3$ Jacobian matrix.
+    3. Compute the $6 \times 24$ $\mathbf{B}$ matrix.
+    4. Accumulate the stiffness matrix contributions using Einstein summation.
     """
     Xe = as_float_array(Xe)
     if Xe.shape[0] == 20:
@@ -498,6 +559,18 @@ def qeh8e(Xe, Ge, Ue):
     tuple[ndarray, ndarray, ndarray]
         Element internal-force vector, Gauss-point stresses, and Gauss-point
         strains.
+
+    Mathematical Formulation
+    ------------------------
+    Strains and stresses are evaluated at $2 \times 2 \times 2$ Gauss points.
+    $$ \boldsymbol{\epsilon}(\mathbf{r}_i) = \mathbf{B}(\mathbf{r}_i) \mathbf{u}^e, \quad \boldsymbol{\sigma}(\mathbf{r}_i) = \mathbf{C} \boldsymbol{\epsilon}(\mathbf{r}_i) $$
+
+    Algorithm
+    ---------
+    1. Loop over 8 Gauss points.
+    2. Compute the $3 \times 3$ Jacobian matrix and the $\mathbf{B}$ matrix at each point.
+    3. Evaluate strains and stresses at each integration point.
+    4. Integrate the internal forces over the volume.
     """
     Xe = as_float_array(Xe)
     if Xe.shape[0] == 20:
@@ -553,6 +626,19 @@ def kh8e(K, T, X, G):
     -------
     ndarray or sparse matrix
         Updated global stiffness matrix.
+
+    Mathematical Formulation
+    ------------------------
+    Global stiffness is formed by summing element contributions:
+    $$ \mathbf{K} = \mathbf{K} + \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{K}^e \mathbf{L}_e $$
+    using $2 \times 2 \times 2$ numerical integration for hexahedra.
+
+    Algorithm
+    ---------
+    1. Loop over all elements or perform batched computations.
+    2. Accumulate integrations over 8 Gauss points per element.
+    3. Form batched $\mathbf{B}$ matrices and compute stiffness components.
+    4. Scatter the element stiffness matrices into the global $\mathbf{K}$.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -627,6 +713,18 @@ def qh8e(q, T, X, G, u):
     tuple[ndarray, ndarray, ndarray]
         Updated internal-force vector, flattened Gauss-point stresses, and
         flattened Gauss-point strains.
+
+    Mathematical Formulation
+    ------------------------
+    Global internal force is aggregated via integration over the element domain:
+    $$ \mathbf{q} = \mathbf{q} + \sum_{e=1}^{N_e} \mathbf{L}_e^T \left( \sum_{i=1}^{8} \mathbf{B}_i^T \boldsymbol{\sigma}_i \det(\mathbf{J}_i) W_i \right) $$
+
+    Algorithm
+    ---------
+    1. Retrieve global displacements and evaluate localized counterparts.
+    2. Form the $\mathbf{B}$ matrices using $2 \times 2 \times 2$ Gauss points.
+    3. Map displacements to element strains and element stresses.
+    4. Assemble localized internal element forces into the global vector.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -697,6 +795,19 @@ def meT4e(Xe, Ge, *, lumped: bool = False):
     Returns
     -------
     Me : ndarray, shape (12, 12)
+
+    Mathematical Formulation
+    ------------------------
+    The consistent mass matrix for a T4 element evaluates exactly:
+    $$ \mathbf{M}^e = \int_{\Omega^e} \rho \mathbf{N}^T \mathbf{N} \, d\Omega $$
+    Lumping is performed directly by distributing the total mass equally among the 4 nodes.
+
+    Algorithm
+    ---------
+    1. Retrieve density $\rho$ and element coordinates.
+    2. Compute the volume of the element $V = \det(\mathbf{J}) / 6$.
+    3. Generate the analytical consistent mass scaling if not lumped.
+    4. Distribute mass diagonally if `lumped=True`.
     """
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -743,6 +854,18 @@ def mT4e(M, T, X, G, *, lumped: bool = False):
     -------
     M : ndarray or sparse
         Updated global mass matrix.
+
+    Mathematical Formulation
+    ------------------------
+    Global mass matrix assembly combines T4 element mass contributions:
+    $$ \mathbf{M} = \mathbf{M} + \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{M}^e \mathbf{L}_e $$
+
+    Algorithm
+    ---------
+    1. Parse global nodal coordinates and topology mapping.
+    2. Extract density, compute batched volumes via determinant.
+    3. Generate consistent or lumped elemental mass matrices.
+    4. Scatter the element mass properties into the global system matrix.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)
@@ -815,6 +938,19 @@ def meh8e(Xe, Ge, *, lumped: bool = False):
     Returns
     -------
     Me : ndarray, shape (24, 24)
+
+    Mathematical Formulation
+    ------------------------
+    Using standard $2 \times 2 \times 2$ Gauss numerical integration, the consistent mass matrix is:
+    $$ \mathbf{M}^e = \sum_{i=1}^8 \rho \mathbf{N}_i^T \mathbf{N}_i \det(\mathbf{J}_i) W_i $$
+    Lumped mass utilizes HRZ diagonal scaling to conserve the element's total volumetric mass.
+
+    Algorithm
+    ---------
+    1. Initialize the elemental mass accumulator tensor.
+    2. Integrate density over 8 Gaussian nodes using shape functions.
+    3. Scale density with the Jacobian determinant per volume step.
+    4. If lumped, apply HRZ extraction along the diagonal elements.
     """
     Xe = as_float_array(Xe)
     props = as_float_array(Ge).reshape(-1)
@@ -898,6 +1034,18 @@ def mh8e(M, T, X, G, *, lumped: bool = False):
     -------
     M : ndarray or sparse
         Updated global mass matrix.
+
+    Mathematical Formulation
+    ------------------------
+    Global integration combines element mass arrays for the full global scope:
+    $$ \mathbf{M} = \mathbf{M} + \sum_{e=1}^{N_e} \mathbf{L}_e^T \mathbf{M}^e \mathbf{L}_e $$
+
+    Algorithm
+    ---------
+    1. Query global coordinates and corresponding element connectivity.
+    2. Iteratively process individual element structural arrays.
+    3. Determine corresponding $24 \times 24$ mass entries using integration methods.
+    4. Combine and scatter locally computed coefficients into the global mass.
     """
     topology = as_float_array(T)
     coordinates = as_float_array(X)

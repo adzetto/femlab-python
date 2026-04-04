@@ -208,6 +208,20 @@ def keq4e(Xe, Ge):
 
     Uses 2x2 Gauss quadrature for numerical integration.
 
+    Mathematical Formulation
+    ------------------------
+    The stiffness matrix for a Q4 element is computed using $2 \times 2$ Gauss-Legendre integration:
+    $$ K_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j B^T D B |J| t $$
+    where $B$ is the strain-displacement matrix, $D$ is the material elasticity matrix, $|J|$ is the determinant of the Jacobian, and $t$ is the element thickness.
+
+    Algorithm
+    ---------
+    1. Extract material properties and initialize the $8 \times 8$ element stiffness matrix $K_e$.
+    2. Loop over the $2 \times 2$ Gauss integration points.
+    3. Evaluate the shape function derivatives and the Jacobian matrix $J$.
+    4. Compute the global strain-displacement matrix $B$.
+    5. Accumulate the contribution to $K_e$ from the current Gauss point.
+
     Parameters
     ----------
     Xe : array_like, shape (4, 2)
@@ -261,6 +275,20 @@ def keq4e(Xe, Ge):
 def qeq4e(Xe, Ge, Ue):
     """
     Compute stresses and strains at Gauss points for a single Q4 element.
+
+    Mathematical Formulation
+    ------------------------
+    The internal force vector is computed by integrating the stresses:
+    $$ q_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j B^T \sigma |J| t $$
+    The strains and stresses are evaluated at each Gauss point as $\epsilon = B u_e$ and $\sigma = D \epsilon$.
+
+    Algorithm
+    ---------
+    1. Initialize the element force vector $q_e$ and arrays for stresses and strains.
+    2. Loop over the 4 Gauss points.
+    3. Compute the B-matrix, then compute strains $\epsilon = B u_e$.
+    4. Compute stresses $\sigma = D \epsilon$.
+    5. Accumulate $B^T \sigma |J| t w_i w_j$ into $q_e$.
 
     Parameters
     ----------
@@ -317,6 +345,19 @@ def kq4e(K, T, X, G):
     """
     Assemble Q4 element stiffness matrices into global stiffness matrix.
 
+    Mathematical Formulation
+    ------------------------
+    The global stiffness matrix is assembled from element contributions:
+    $$ K_{IJ} = \sum_{e} \left( L_e^T K_e L_e \right)_{IJ} $$
+    where $L_e$ is the Boolean connectivity matrix for element $e$.
+
+    Algorithm
+    ---------
+    1. Iterate over each element in the topology array.
+    2. Extract the nodal coordinates and material properties for the element.
+    3. Compute the element stiffness matrix using `keq4e`.
+    4. Assemble the local stiffness into the global matrix $K$ using `assmk`.
+
     Parameters
     ----------
     K : ndarray, shape (ndof, ndof)
@@ -354,6 +395,18 @@ def kq4e(K, T, X, G):
 def qq4e(q, T, X, G, u):
     """
     Compute stresses/strains for all Q4 elements and assemble internal forces.
+
+    Mathematical Formulation
+    ------------------------
+    The global internal force vector is assembled from element contributions:
+    $$ q_{I} = \sum_{e} \left( L_e^T q_e \right)_{I} $$
+
+    Algorithm
+    ---------
+    1. Iterate over each element in the topology array.
+    2. Extract the local displacement vector $u_e$.
+    3. Compute the element force vector $q_e$ using `qeq4e`.
+    4. Assemble into the global force vector $q$ using `assmq`.
 
     Parameters
     ----------
@@ -410,6 +463,18 @@ def keq4p(Xe, Ge):
     """
     Compute the scalar conductivity matrix for a 4-node quadrilateral.
 
+    Mathematical Formulation
+    ------------------------
+    The conductivity matrix for a potential flow Q4 element is computed as:
+    $$ K_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j \left( B^T D B + N^T b N \right) |J| $$
+
+    Algorithm
+    ---------
+    1. Initialize the $4 \times 4$ element conductivity matrix.
+    2. Loop over the $2 \times 2$ Gauss points.
+    3. Compute shape functions $N$, their derivatives, and the B-matrix.
+    4. Accumulate the contribution to $K_e$.
+
     Parameters
     ----------
     Xe:
@@ -455,6 +520,19 @@ def qeq4p(Xe, Ge, Ue):
     """
     Recover gradients and fluxes for one Q4 scalar potential element.
 
+    Mathematical Formulation
+    ------------------------
+    The element nodal fluxes are computed as:
+    $$ q_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j B^T \sigma |J| $$
+    where $\epsilon = B U_e$ and $\sigma = D \epsilon$.
+
+    Algorithm
+    ---------
+    1. Initialize the $4 \times 1$ flux vector.
+    2. Loop over the 4 Gauss points.
+    3. Evaluate gradients $\epsilon = B U_e$ and fluxes $\sigma = D \epsilon$.
+    4. Accumulate the internal flux contribution.
+
     Parameters
     ----------
     Xe:
@@ -494,6 +572,17 @@ def kq4p(K, T, X, G):
     """
     Assemble Q4 scalar conductivity matrices into the global system.
 
+    Mathematical Formulation
+    ------------------------
+    The global conductivity matrix is assembled from element matrices:
+    $$ K_{IJ} = \sum_{e} \left( L_e^T K_e L_e \right)_{IJ} $$
+
+    Algorithm
+    ---------
+    1. Iterate over each element in the topology array.
+    2. Compute the element conductivity matrix using `keq4p`.
+    3. Assemble the local conductivity into the global matrix $K$.
+
     Parameters
     ----------
     K:
@@ -522,6 +611,17 @@ def kq4p(K, T, X, G):
 def qq4p(q, T, X, G, u):
     """
     Recover Q4 scalar gradients and assemble equivalent nodal fluxes.
+
+    Mathematical Formulation
+    ------------------------
+    The global nodal flux vector is assembled from element contributions:
+    $$ q_{I} = \sum_{e} \left( L_e^T q_e \right)_{I} $$
+
+    Algorithm
+    ---------
+    1. Iterate over each element in the topology array.
+    2. Compute the element flux vector $q_e$ using `qeq4p`.
+    3. Assemble into the global flux vector $q$.
 
     Parameters
     ----------
@@ -592,6 +692,20 @@ def _ensure_state_width(state, element_count: int, width: int):
 def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
     """
     Compute the consistent tangent of a plane-stress elastoplastic Q4 element.
+
+    Mathematical Formulation
+    ------------------------
+    The consistent tangent stiffness matrix for a plane-stress elastoplastic Q4 element is:
+    $$ K_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j B^T D_{ep} B |J| t $$
+    where $D_{ep}$ is the consistent elastoplastic tangent modulus.
+
+    Algorithm
+    ---------
+    1. Initialize the $8 \times 8$ consistent tangent stiffness matrix.
+    2. Loop over the $2 \times 2$ Gauss points.
+    3. Check the yield criterion $f(\sigma) \ge 0$.
+    4. Compute the elastoplastic tangent $D_{ep}$.
+    5. Accumulate the contribution to $K_e$.
 
     Parameters
     ----------
@@ -680,6 +794,19 @@ def keq4eps(Xe, Ge, Se, Ee, mtype: int = 1):
 def qeq4eps(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
     """
     Update plane-stress elastoplastic Q4 response at the four Gauss points.
+
+    Mathematical Formulation
+    ------------------------
+    The internal forces for a plane-stress elastoplastic Q4 element are evaluated using the integrated stresses:
+    $$ q_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j B^T \sigma |J| t $$
+    where $\sigma$ is updated via a return-mapping algorithm.
+
+    Algorithm
+    ---------
+    1. Loop over the 4 Gauss points.
+    2. Compute the trial elastic stress and check the yield condition.
+    3. If yielding, perform a return-mapping step (von Mises or Drucker-Prager) to correct the stress.
+    4. Accumulate the updated stress into the element force vector.
 
     Parameters
     ----------
@@ -804,6 +931,43 @@ def keq4epe(Xe, Ge, Se, Ee, mtype: int = 1):
     """
     Compute the consistent tangent of a plane-strain elastoplastic Q4 element.
 
+    Mathematical Formulation
+    ------------------------
+    The global elastoplastic tangent stiffness matrix is assembled from element contributions:
+    $$ K_{IJ} = \sum_{e} \left( L_e^T K_e L_e \right)_{IJ} $$
+
+    Algorithm
+    ---------
+    1. Ensure the history arrays are properly sized.
+    2. Iterate over each element in the topology array.
+    3. Compute the element tangent stiffness matrix using `keq4eps`.
+    4. Assemble the local tangent into the global matrix $K$.
+
+    Mathematical Formulation
+    ------------------------
+    The global internal force vector and updated history variables are computed by assembling element contributions:
+    $$ q_{I} = \sum_{e} \left( L_e^T q_e \right)_{I} $$
+
+    Algorithm
+    ---------
+    1. Ensure the history arrays are properly sized.
+    2. Iterate over each element in the topology array.
+    3. Compute the element internal forces and update history using `qeq4eps`.
+    4. Assemble into the global force vector $q$.
+
+    Mathematical Formulation
+    ------------------------
+    The consistent tangent stiffness matrix for a plane-strain elastoplastic Q4 element is:
+    $$ K_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j \bar{B}^T D_{ep} \bar{B} |J| t $$
+    utilizing a $\bar{B}$ (B-bar) formulation to prevent volumetric locking.
+
+    Algorithm
+    ---------
+    1. Compute the $\bar{B}$ matrix components to alleviate locking.
+    2. Loop over the $2 \times 2$ Gauss points.
+    3. Check the yield condition and evaluate the consistent elastoplastic tangent $D_{ep}$.
+    4. Accumulate the contribution to $K_e$.
+
     Parameters
     ----------
     Xe:
@@ -920,6 +1084,20 @@ def keq4epe(Xe, Ge, Se, Ee, mtype: int = 1):
 def qeq4epe(Xe, Ge, Ue, Se, Ee, mtype: int = 1):
     """
     Update plane-strain elastoplastic Q4 response at the four Gauss points.
+
+    Mathematical Formulation
+    ------------------------
+    The internal forces for a plane-strain elastoplastic Q4 element are computed as:
+    $$ q_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j \bar{B}^T \sigma |J| t $$
+    where a return-mapping scheme updates $\sigma$.
+
+    Algorithm
+    ---------
+    1. Compute the modified $\bar{B}$ matrix for isochoric deformation.
+    2. Loop over the 4 Gauss points.
+    3. Compute the trial elastic stress and check against the yield surface.
+    4. Perform the plastic return mapping if necessary.
+    5. Accumulate the integrated stress into $q_e$.
 
     Parameters
     ----------
@@ -1102,6 +1280,43 @@ def meq4e(Xe, Ge, *, lumped: bool = False):
 
     Lumped via row-sum with total-mass preservation.
 
+    Mathematical Formulation
+    ------------------------
+    The global elastoplastic tangent stiffness matrix for plane strain is assembled as:
+    $$ K_{IJ} = \sum_{e} \left( L_e^T K_e L_e \right)_{IJ} $$
+
+    Algorithm
+    ---------
+    1. Ensure the history arrays are properly sized (width 20 for plane strain).
+    2. Iterate over each element.
+    3. Compute the element tangent stiffness matrix using `keq4epe`.
+    4. Assemble the local tangent into the global matrix $K$.
+
+    Mathematical Formulation
+    ------------------------
+    The global internal forces for plane-strain elastoplastic analysis are assembled from elements:
+    $$ q_{I} = \sum_{e} \left( L_e^T q_e \right)_{I} $$
+
+    Algorithm
+    ---------
+    1. Ensure the history arrays are correctly sized.
+    2. Iterate over each element.
+    3. Compute the element internal forces and update history using `qeq4epe`.
+    4. Assemble into the global force vector $q$.
+
+    Mathematical Formulation
+    ------------------------
+    The consistent mass matrix for a Q4 element is computed as:
+    $$ M_e = \sum_{i=1}^2 \sum_{j=1}^2 w_i w_j \rho t N^T N |J| $$
+    A lumped mass matrix is computed using a row-sum technique scaled to preserve total mass.
+
+    Algorithm
+    ---------
+    1. Initialize the $8 \times 8$ consistent mass matrix $M_e$.
+    2. Loop over the $2 \times 2$ Gauss integration points.
+    3. Accumulate $\rho t N^T N |J| w_i w_j$ into $M_e$.
+    4. If lumped is True, compute the row sums and return a diagonal matrix that preserves total mass.
+
     Parameters
     ----------
     Xe : array_like, shape (4, 2)
@@ -1166,6 +1381,17 @@ def meq4e(Xe, Ge, *, lumped: bool = False):
 def mq4e(M, T, X, G, *, lumped: bool = False):
     """
     Assemble Q4 element mass matrices into the global mass matrix.
+
+    Mathematical Formulation
+    ------------------------
+    The global mass matrix is assembled from element mass matrices:
+    $$ M_{IJ} = \sum_{e} \left( L_e^T M_e L_e \right)_{IJ} $$
+
+    Algorithm
+    ---------
+    1. Iterate over each element in the topology array.
+    2. Compute the element mass matrix using `meq4e`.
+    3. Assemble the local mass into the global mass matrix $M$.
 
     Parameters
     ----------

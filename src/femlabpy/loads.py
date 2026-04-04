@@ -25,6 +25,12 @@ def setload(p, P):
     p : ndarray
         Updated load vector.
 
+    Algorithm
+    ---------
+    1. Extract the number of degrees of freedom $d$ from the load matrix $P$.
+    2. Compute the corresponding linear indices $I$ from the 1-based node IDs.
+    3. Update the global load vector $p$ using $p[I, 0] = P_{F}$.
+
     Examples
     --------
     >>> from femlabpy import init, setload
@@ -62,6 +68,12 @@ def addload(p, P):
     -------
     p : ndarray
         Updated load vector.
+
+    Algorithm
+    ---------
+    1. Extract the number of degrees of freedom $d$ from the load matrix $P$.
+    2. Compute the corresponding linear indices $I$ from the 1-based node IDs.
+    3. Accumulate the forces into the global load vector $p$ using unbuffered addition $p[I, 0] \mathrel{+}= P_{F}$.
 
     See Also
     --------
